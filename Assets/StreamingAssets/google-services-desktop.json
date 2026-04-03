@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1019457959885",
+    "project_id": "legendguardian-d1c51",
+    "storage_bucket": "legendguardian-d1c51.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019457959885:android:972fd50bf286d18c8f3684",
+        "android_client_info": {
+          "package_name": "com.UnityTechnologies.com.unity.template.urpblank"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrcgU3iIZAusRt6k2erveIvVyeuBFDcRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
