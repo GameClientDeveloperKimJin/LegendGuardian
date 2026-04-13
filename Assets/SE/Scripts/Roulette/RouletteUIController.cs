@@ -1,33 +1,34 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class RouletteUIController : MonoBehaviour
 {
     [Header("Controller")]
     [SerializeField] private RouletteWheelController wheelController;
 
+    [Header("Buttons")]
+    [SerializeField] private Button spinButton;
+    [SerializeField] private Button closeButton;
+
     [Header("Result UI")]
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text routeNameText;
-    [SerializeField] private Button closeButton;
-
-    [Header("Auto Spin")]
-    [SerializeField] private float autoSpinDelay = 1f;
 
     [Header("Test Result")]
     [SerializeField] private RouteResultData testResultData;
 
-    [Header("Wheel Objects")]
-    [SerializeField] private GameObject rouletteWheel;
-    [SerializeField] private GameObject roulettepointer;
+    [Header("Scene Transition")]
+    [SerializeField] private string nextSceneName;
 
     private RouteResultData currentResultData;
-    private bool hasStarted;
 
     private void Awake()
     {
+        if (spinButton != null)
+            spinButton.onClick.AddListener(OnClickSpin);
+
         if (closeButton != null)
             closeButton.onClick.AddListener(OnClickCloseResult);
 
@@ -35,33 +36,40 @@ public class RouletteUIController : MonoBehaviour
             resultPanel.SetActive(false);
     }
 
-    private void Start()
+    public void SetResultData(RouteResultData resultData)
     {
-        if (!hasStarted)
-        {
-            StartCoroutine(AutoSpinCoroutine());
-        }
+        currentResultData = resultData;
     }
 
-    private IEnumerator AutoSpinCoroutine()
+    private void OnClickSpin()
     {
-        hasStarted = true;
-
-        yield return new WaitForSeconds(autoSpinDelay);
-
-        // 나중에 Firebase/DB 결과가 들어오면 이 부분만 바꾸면 됨. 현재는 테스트용
-        currentResultData = testResultData;
-
-        if (currentResultData == null)
-        {
-            Debug.LogError("testResultData가 비어 있습니다.");
-            yield break;
-        }
-
         if (wheelController == null)
         {
             Debug.LogError("wheelController가 연결되지 않았습니다.");
-            yield break;
+            return;
+        }
+
+        if (wheelController.IsSpinning)
+            return;
+
+        if (spinButton != null)
+            spinButton.gameObject.SetActive(false);
+
+        if (resultPanel != null)
+            resultPanel.SetActive(false);
+
+        // 외부에서 결과를 넣지 않으면 테스트 데이터 사용
+        if (currentResultData == null)
+            currentResultData = testResultData;
+
+        if (currentResultData == null)
+        {
+            Debug.LogError("currentResultData와 testResultData가 모두 비어 있습니다.");
+
+            if (spinButton != null)
+                spinButton.interactable = true;
+
+            return;
         }
 
         wheelController.SpinToResult(currentResultData.routeIndex, OnSpinComplete);
@@ -69,37 +77,28 @@ public class RouletteUIController : MonoBehaviour
 
     private void OnSpinComplete()
     {
-        if (RouteResultManager.Instance != null)
-        {
-            RouteResultManager.Instance.SetResult(currentResultData);
-        }
+        if (resultPanel != null)
+            resultPanel.SetActive(true);
 
         if (routeNameText != null)
         {
-            routeNameText.text = currentResultData.routeName;
+            if (currentResultData != null)
+                routeNameText.text = currentResultData.routeName;
+            else
+                routeNameText.text = "결과 없음";
         }
 
-        if (resultPanel != null)
-        {
-            resultPanel.SetActive(true);
-        }
     }
 
     private void OnClickCloseResult()
     {
-        if (resultPanel != null)
-            resultPanel.SetActive(false);
-
-        if (rouletteWheel != null)
-            rouletteWheel.SetActive(false);
-
-        if (roulettepointer != null)
-            roulettepointer.SetActive(false);
-    }
-
-    // 나중에 외부(DB/Firebase)에서 결과를 넣을 때 사용할 예정
-    public void SetResultData(RouteResultData resultData)
-    {
-        currentResultData = resultData;
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            Debug.LogWarning("다음 씬 이름이 설정되지 않았습니다.");
+        }
     }
 }
