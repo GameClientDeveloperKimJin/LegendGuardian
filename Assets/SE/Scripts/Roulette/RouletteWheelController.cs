@@ -10,6 +10,8 @@ public class RouletteWheelController : MonoBehaviour
     [SerializeField] private int totalSegments = 5;
     [SerializeField] private float spinDuration = 3f;
     [SerializeField] private int extraSpins = 5;
+    [SerializeField] private RouletteUIController uiController;
+    [SerializeField] private float flashStartBeforeEnd = 0.8f;
 
     private bool isSpinning;
 
@@ -39,6 +41,7 @@ public class RouletteWheelController : MonoBehaviour
         float endZ = startZ - totalRotation;
 
         float elapsed = 0f;
+        bool flashStarted = false;
 
         while (elapsed < spinDuration)
         {
@@ -50,6 +53,16 @@ public class RouletteWheelController : MonoBehaviour
 
             float currentZ = Mathf.Lerp(startZ, endZ, easedT);
             wheelTransform.rotation = Quaternion.Euler(0f, 0f, currentZ);
+
+            float remainingTime = spinDuration - elapsed;
+
+            if (!flashStarted && remainingTime <= flashStartBeforeEnd)
+            {
+                flashStarted = true;
+
+                if (uiController != null)
+                    uiController.StartFlashEarly();
+            }
 
             yield return null;
         }
