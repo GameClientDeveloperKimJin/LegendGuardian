@@ -33,6 +33,10 @@ public class TitleSceneUIController : MonoBehaviour
     [SerializeField]
     TMP_InputField CreatePWInputField;
 
+    [Header("룰렛 관련")]
+    [SerializeField]
+    Canvas uiRuletCanvas;
+
     private void OnEnable()
     {
         if(AuthManager.Instance != null)
@@ -81,7 +85,18 @@ public class TitleSceneUIController : MonoBehaviour
        
         if(success)
         {
-            Debug.Log("로그인 성공");
+            LoginInputField.text = "";
+            PWInputField.text = "";
+
+            OnInfoUI("로그인 성공");
+
+            InfoCheckBtn.onClick.RemoveAllListeners();
+            InfoCheckBtn.onClick.AddListener(() =>
+            {
+                OnHideInfoUI();
+                uiRuletCanvas.enabled = true;
+                AuthManager.Instance.SaveUserID(id);
+            });           
         }
         else
         {
@@ -112,7 +127,17 @@ public class TitleSceneUIController : MonoBehaviour
 
         if (success)
         {
-            Debug.Log("회원가입 성공");
+            CreateLoginInputField.text = "";
+            CreatePWInputField.text = "";
+
+            OnInfoUI("회원가입 성공");
+
+            InfoCheckBtn.onClick.RemoveAllListeners();
+            InfoCheckBtn.onClick.AddListener(() =>
+            {
+                OnHideInfoUI();
+                CreateImage.gameObject.SetActive(false);
+            });
         }
         else
         {
@@ -130,6 +155,14 @@ public class TitleSceneUIController : MonoBehaviour
         InfoTMP.text = message;
 
         InfoCheckBtn.onClick.AddListener(() => InfoImage.gameObject.SetActive(false));
+    }
 
+    private void OnHideInfoUI()
+    {
+        InfoImage.gameObject.SetActive(false);
+
+        InfoTMP.text = "";
+
+        InfoCheckBtn.onClick.RemoveAllListeners();
     }
 }

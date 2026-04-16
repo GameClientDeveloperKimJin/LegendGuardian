@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
-/// À¯Àú ÀÎÁõ °ü¸®
+/// ì¸ì¦ ê´€ë ¨ ê´€ë¦¬
 /// </summary>
 public class AuthManager : MonoBehaviour
 {
@@ -23,11 +23,18 @@ public class AuthManager : MonoBehaviour
 
     public event Action<string> OnAuthInfo;
 
+    private string loginUserID; //ë¡œê·¸ì¸ í•œ ìœ ì €ì˜ ID
+    public string LoginUserID => loginUserID;
+
+    public void SaveUserID(string userID) => this.loginUserID = userID;
+
+
     private void Awake()
     {
         if(instance == null)
         {
             instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -37,7 +44,7 @@ public class AuthManager : MonoBehaviour
 
 
     /// <summary>
-    /// È¸¿ø°¡ÀÔ Auth °èÁ¤ »ı¼º -> Firestore¿¡ »ç¿ëÀÚ Á¤º¸ ÀúÀå
+    /// íšŒì›ê°€ì…: Auth ìœ ì € ìƒì„± -> Firestoreì— ìœ ì € ë°ì´í„° ì €ì¥
     /// </summary>
     /// <param name="email"></param>
     /// <param name="password"></param>
@@ -46,7 +53,7 @@ public class AuthManager : MonoBehaviour
     {
         if(!FirebaseManager.Instance.IsConnect)
         {
-            return (false, "Firebase ÃÊ±âÈ­ µÇÁö ¾ÊÀ½");
+            return (false, "Firebase ì´ˆê¸°í™” ë˜ì§€ ì•ŠìŒ");
         }
 
         try
@@ -57,16 +64,16 @@ public class AuthManager : MonoBehaviour
 
             await SaveUserToFirestore(result.User);
 
-            Debug.Log($"È¸¿ø°¡ÀÔ ¼º°ø - È¸¿ø°¡ÀÔ ÇÑ ID : {result.User.Email}");
+            Debug.Log($"íšŒì›ê°€ì… ì„±ê³µ - íšŒì›ê°€ì… í•œ ID : {result.User.Email}");
 
-            return (true, null); // true : ¼º°ø , null : ¿¡·¯ ¾øÀ½
+            return (true, null); // true : ì„±ê³µ , null : ì—ëŸ¬ ì—†ìŒ
         }
         catch (FirebaseException e)
         {
-            string msg = ParseAuthError((AuthError)e.ErrorCode);    
-            
-            Debug.LogWarning($"È¸¿ø°¡ÀÔ ½ÇÆĞ: {e.ErrorCode} - {msg}");  
-            
+            string msg = ParseAuthError((AuthError)e.ErrorCode);
+
+            OnAuthInfo?.Invoke(msg);
+
             return (false, msg);
         }
         catch (Exception e)
@@ -74,8 +81,9 @@ public class AuthManager : MonoBehaviour
             return (false, e.Message);
         }
     }
+
     /// <summary>
-    /// ·Î±×ÀÎ
+    /// ë¡œê·¸ì¸
     /// </summary>
     /// <param name="email"></param>
     /// <param name="password"></param>
@@ -84,7 +92,7 @@ public class AuthManager : MonoBehaviour
     {
         if (!FirebaseManager.Instance.IsConnect)
         {
-            return (false, "Firebase ÃÊ±âÈ­ µÇÁö ¾ÊÀ½");
+            return (false, "Firebase ì´ˆê¸°í™” ë˜ì§€ ì•ŠìŒ");
         }
 
         try
@@ -93,33 +101,42 @@ public class AuthManager : MonoBehaviour
 
             AuthResult result = await FirebaseManager.Instance.Auth.SignInWithEmailAndPasswordAsync(email, password);
 
-            await SaveUserToFirestore(result.User);
+            // Firestoreì— ìœ ì € ë°ì´í„°ê°€ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸
+            DocumentReference docRef = FirebaseManager.Instance.Firestore.Collection("users").Document(result.User.UserId);
+            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
-            Debug.Log($"·Î±×ÀÎ ¼º°ø - ·Î±×ÀÎ ÇÑ ID : {result.User.Email}");
+            if (!snapshot.Exists)
+            {
+                FirebaseManager.Instance.Auth.SignOut();
+                return (false, "ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ì‚¬ìš©ìì…ë‹ˆë‹¤.");
+            }
 
-            return (true, null); // true : ¼º°ø , null : ¿¡·¯ ¾øÀ½
+            Debug.Log($"ë¡œê·¸ì¸ ì„±ê³µ - ë¡œê·¸ì¸ í•œ ID : {result.User.Email}");
+
+            return (true, null); // true : ì„±ê³µ , null : ì—ëŸ¬ ì—†ìŒ
         }
         catch (FirebaseException e)
         {
             string msg = ParseAuthError((AuthError)e.ErrorCode);
 
+            OnAuthInfo?.Invoke(msg);
             return (false, msg);
         }
         catch (Exception e)
         {
-            Debug.LogError($"ÀÏ¹İ ¿¡·¯: {e.GetType().Name} / {e.Message}");
+            Debug.LogError($"ì¼ë°˜ ì˜¤ë¥˜: {e.GetType().Name} / {e.Message}");
             return (false, e.Message);
         }
     }
 
     /// <summary>
-    /// ·Î±×¾Æ¿ô
+    /// ë¡œê·¸ì•„ì›ƒ
     /// </summary>
     public void SignOut()
     {
         FirebaseManager.Instance.Auth.SignOut();
 
-        Debug.Log("·Î±×¾Æ¿ô ¿Ï·á");
+        Debug.Log("ë¡œê·¸ì•„ì›ƒ ì™„ë£Œ");
     }
 
     private async Task SaveUserToFirestore(FirebaseUser user)
@@ -129,51 +146,48 @@ public class AuthManager : MonoBehaviour
         Dictionary<string, object> data = new Dictionary<string, object>();
 
         data["userid"] = user.Email;
-        //data["password"] = user.Pa;
 
         await docRef.SetAsync(data);
-        Debug.Log($"FireStore users/{user.UserId} ÀúÀå ¿Ï·á");
+        Debug.Log($"FireStore users/{user.UserId} ì €ì¥ ì™„ë£Œ");
     }
 
 
     /// <summary>
-    /// AuthError¿¡ ¸Â´Â ¿À·ù ¸Ş½ÃÁö ¹İÈ¯
+    /// AuthErrorì— ë§ëŠ” ì˜¤ë¥˜ ë©”ì‹œì§€ ë°˜í™˜
     /// </summary>
     /// <param name="error"></param>
     /// <returns></returns>
-    private string ParseAuthError(AuthError error)                                                
+    private string ParseAuthError(AuthError error)
     {
         string message = "";
-        
+
         switch(error)
         {
             case AuthError.EmailAlreadyInUse:
-                message = "ÀÌ¹Ì »ç¿ë ÁßÀÎ ÀÌ¸ŞÀÏÀÔ´Ï´Ù.";
+                message = "ì´ë¯¸ ì‚¬ìš© ì¤‘ì¸ ì´ë©”ì¼ì…ë‹ˆë‹¤.";
                 break;
             case AuthError.InvalidEmail:
-                message = "ÀÌ¸ŞÀÏ Çü½Ä ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.";
+                message = "ì´ë©”ì¼ í˜•ì‹ì´ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.";
                 break;
             case AuthError.WeakPassword:
-                message = "ºñ¹Ğ¹øÈ£´Â 6ÀÚ ÀÌ»óÀÌ¾î¾ß ÇÕ´Ï´Ù.";
+                message = "ë¹„ë°€ë²ˆí˜¸ëŠ” 6ì ì´ìƒì´ì–´ì•¼ í•©ë‹ˆë‹¤.";
                 break;
             case AuthError.WrongPassword:
-                message = "ºñ¹Ğ¹øÈ£°¡ Æ²·È½À´Ï´Ù.";
+                message = "ë¹„ë°€ë²ˆí˜¸ê°€ í‹€ë ¸ìŠµë‹ˆë‹¤.";
                 break;
             case AuthError.UserNotFound:
-                message = "Á¸ÀçÇÏÁö ¾Ê´Â °èÁ¤ÀÔ´Ï´Ù.";
+                message = "ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ì‚¬ìš©ìì…ë‹ˆë‹¤.";
                 break;
             case AuthError.NetworkRequestFailed:
-                message = "³×Æ®¿öÅ© ¿¬°áÀ» È®ÀÎÇØÁÖ¼¼¿ä,";
+                message = "ë„¤íŠ¸ì›Œí¬ ìƒíƒœë¥¼ í™•ì¸í•´ì£¼ì„¸ìš”.";
                 break;
             case AuthError.TooManyRequests:
-                message = "Àá½Ã ÈÄ ´Ù½Ã ½ÃµµÇØÁÖ¼¼¿ä.";
+                message = "ì ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ì£¼ì„¸ìš”.";
                 break;
             default:
-                message = $"¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù. {error}";
+                message = $"ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤. {error}";
                 break;
         }
-
-        OnAuthInfo?.Invoke(message);
         return message;
-     }    
+     }
 }
