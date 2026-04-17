@@ -1,21 +1,22 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
+import DashboardPage from "./pages/DashboardPage";
 import TeamsPage from "./pages/TeamsPage";
-
-// 더미 Dashboard 페이지
-function Dashboard() {
-  return <div className="p-10"><h1 className="text-3xl font-bold text-gray-300">Dashboard UI</h1></div>;
-}
+import UsersPage from "./pages/UsersPage";
+import MissionsPage from "./pages/MissionsPage";
+import RoutesPage from "./pages/RoutesPage";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<DashboardPage />} />
           <Route path="teams" element={<TeamsPage />} />
-          {/* 다른 페이지들도 추후 추가 가능 */}
-          <Route path="*" element={<div className="p-10">Working on it...</div>} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="missions" element={<MissionsPage />} />
+          <Route path="routes" element={<RoutesPage />} />
+          <Route path="*" element={<div className="p-10 text-gray-400">Working on it... (Comin soon)</div>} />
         </Route>
       </Routes>
     </Router>
