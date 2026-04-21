@@ -182,10 +182,7 @@ public class RouletteUIController : MonoBehaviour
 
         if (routeNameText != null)
         {
-            if (currentResultData != null)
-                routeNameText.text = currentResultData.routeName;
-            else
-                routeNameText.text = "결과 없음";
+            routeNameText.text = AuthManager.Instance?.GetUserTeamName();
         }
 
         if (flashImage != null)
@@ -202,6 +199,7 @@ public class RouletteUIController : MonoBehaviour
             StartCoroutine(FadeOutWhiteOverlayAfterResult());
         }
     }
+
 
     private void OnClickCloseResult()
     {

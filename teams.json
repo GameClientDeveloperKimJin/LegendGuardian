@@ -1,0 +1,10 @@
+{
+  "teams": {
+    "team_001": {
+      "status": "waiting",
+      "players": {
+        "user_a": true
+      }
+    }
+  }
+}
