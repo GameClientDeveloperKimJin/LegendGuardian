@@ -17,9 +17,6 @@ public class RouletteUIController : MonoBehaviour
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text routeNameText;
 
-    [Header("Test Result")]
-    [SerializeField] private RouteResultData testResultData;
-
     [Header("Scene Transition")]
     [SerializeField] private string nextSceneName;
 
@@ -36,8 +33,6 @@ public class RouletteUIController : MonoBehaviour
     [SerializeField] private float whiteFlashHoldTime = 0.7f;
     [SerializeField] private float whiteFlashFadeOutTime = 0.8f;
     [SerializeField] private float whiteFlashMaxAlpha = 1f;
-
-    private RouteResultData currentResultData;
 
     private void Awake()
     {
@@ -72,11 +67,8 @@ public class RouletteUIController : MonoBehaviour
         }
     }
 
-    public void SetResultData(RouteResultData resultData)
-    {
-        currentResultData = resultData;
-    }
-
+    [SerializeField]
+    int routeIndex;
     private void OnClickSpin()
     {
         if (wheelController == null)
@@ -94,20 +86,10 @@ public class RouletteUIController : MonoBehaviour
         if (resultPanel != null)
             resultPanel.SetActive(false);
 
-        if (currentResultData == null)
-            currentResultData = testResultData;
+        if (spinButton != null)
+            spinButton.gameObject.SetActive(true);
 
-        if (currentResultData == null)
-        {
-            Debug.LogError("currentResultData와 testResultData가 모두 비어 있습니다.");
-
-            if (spinButton != null)
-                spinButton.gameObject.SetActive(true);
-
-            return;
-        }
-
-        wheelController.SpinToResult(currentResultData.routeIndex, OnSpinComplete);
+        wheelController.SpinToResult(routeIndex, OnSpinComplete);
     }
 
     private void OnSpinComplete()

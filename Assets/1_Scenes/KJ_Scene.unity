@@ -207,7 +207,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 263.267, y: -38.10309}
+  m_AnchoredPosition: {x: 263.267, y: -328.1031}
   m_SizeDelta: {x: 141.6821, y: 100.9393}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &26359082
@@ -328,7 +328,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 2.83, y: 215}
+  m_AnchoredPosition: {x: 2.83, y: -40}
   m_SizeDelta: {x: 684.6072, y: 91.8181}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &31036889
@@ -4321,8 +4321,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 2.83, y: 205}
+  m_SizeDelta: {x: 513.3771, y: 320.6225}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1066267124
 MonoBehaviour:
@@ -4344,7 +4344,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 59be258454db2994ba37f7e9ed56610b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4848,7 +4848,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 4.8355, y: 91.32112}
+  m_AnchoredPosition: {x: 4.8355, y: -163.67888}
   m_SizeDelta: {x: 680.6001, y: 90.6309}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1195774990
@@ -5373,10 +5373,6 @@ MonoBehaviour:
   closeButton: {fileID: 615550652}
   resultPanel: {fileID: 1079088064}
   routeNameText: {fileID: 790478913}
-  testResultData:
-    routeId: A
-    routeName: A
-    routeIndex: 0
   nextSceneName: 
   flashImage: {fileID: 709406075}
   flashRect: {fileID: 709406074}
@@ -5400,6 +5396,7 @@ MonoBehaviour:
   whiteFlashHoldTime: 0.8
   whiteFlashFadeOutTime: 0.9
   whiteFlashMaxAlpha: 1
+  routeIndex: 0
 --- !u!114 &1576307067
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6754,7 +6751,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 22, y: -39.362183}
+  m_AnchoredPosition: {x: 22, y: -329.36218}
   m_SizeDelta: {x: 141.6821, y: 100.9393}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1964618537
