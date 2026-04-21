@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
 
 // TODO: 개발자님께서 유니티 프로젝트에 사용된 Firebase 구성을 여기에 복사하여 붙여넣으셔야 작동합니다!
 const firebaseConfig = {
@@ -15,3 +16,4 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const rtdb = getDatabase(app);

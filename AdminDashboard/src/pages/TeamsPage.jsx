@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { assignRandomTeams } from "../utils/teamUtils";
-import { Users, Shuffle, Plus, UserPlus, Trash2 } from "lucide-react";
+import { generateRandomTeams, commitTeamsToDB } from "../utils/teamUtils";
+import { Users, Shuffle, Plus, UserPlus, Trash2, CheckCircle } from "lucide-react";
 
 export default function TeamsPage() {
   const [teams, setTeams] = useState([]);
@@ -12,6 +12,7 @@ export default function TeamsPage() {
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [tempTeams, setTempTeams] = useState(null);
 
   useEffect(() => {
     // 실시간 팀 데이터 구독
@@ -43,9 +44,27 @@ export default function TeamsPage() {
   }, []);
 
   const handleRandomShuffle = async () => {
-    if(!window.confirm("기존 속해있는 팀은 초기화되며, 완전히 무작위로 팀을 재구성합니다. 계속하시겠습니까?")) return;
     setIsProcessing(true);
-    await assignRandomTeams();
+    try {
+      const result = await generateRandomTeams();
+      setTempTeams(result);
+    } catch(err) {
+      alert("팀 생성 중 오류가 발생했습니다.");
+    }
+    setIsProcessing(false);
+  };
+
+  const handleConfirmTeams = async () => {
+    if(!tempTeams) return;
+    if(!window.confirm("현재 보이는 구성대로 팀 편성을 확정하고 클라이언트에 시작 신호를 보내시겠습니까?")) return;
+    setIsProcessing(true);
+    try {
+      await commitTeamsToDB(tempTeams);
+      setTempTeams(null);
+      alert("팀 편성이 성공적으로 확정되었습니다!");
+    } catch(err) {
+      alert("팀 저장 중 오류가 발생했습니다.");
+    }
     setIsProcessing(false);
   };
 
@@ -159,6 +178,37 @@ export default function TeamsPage() {
           </div>
         </div>
       </div>
+
+      {/* 임시 배정 결과 뷰 */}
+      {tempTeams && (
+        <div className="mb-10 bg-indigo-900/40 border border-indigo-500/50 rounded-xl p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <h2 className="text-2xl font-bold text-indigo-200">배정 대기열 (임시 결과)</h2>
+            <div className="flex flex-wrap gap-3">
+              <button onClick={handleRandomShuffle} disabled={isProcessing} className="btn border border-indigo-400 text-indigo-300 hover:bg-indigo-500/20 py-2 px-4 rounded-lg text-sm flex items-center gap-2">
+                <Shuffle size={16} /> 팀 재구성 (다시 돌리기)
+              </button>
+              <button onClick={handleConfirmTeams} disabled={isProcessing} className="btn bg-green-600 hover:bg-green-500 text-white rounded-lg px-5 py-2 font-bold flex items-center gap-2">
+                <CheckCircle size={18} /> 팀 구성 확정 (게임 시작)
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 md:grid-cols-3 gap-4">
+            {tempTeams.map((team, idx) => (
+              <div key={idx} className="bg-black/40 p-4 rounded-lg border border-white/10">
+                <h4 className="text-lg font-bold text-blue-300 mb-2">{team.name} ({team.members.length}명)</h4>
+                <ul className="space-y-1">
+                  {team.members.map(m => (
+                    <li key={m.id} className="text-gray-300 text-sm flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>{m.name || m.id}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <h2 className="text-2xl font-bold mb-5 mt-10">현재 팀 목록</h2>
       <div className="space-y-4">

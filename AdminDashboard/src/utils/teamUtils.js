@@ -1,5 +1,6 @@
 import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { ref, set, update } from "firebase/database";
+import { db, rtdb } from "../firebase/config";
 
 // Fisher-Yates Shuffle
 function shuffle(array) {
@@ -11,14 +12,12 @@ function shuffle(array) {
   return arr;
 }
 
-export const assignRandomTeams = async () => {
+// 1. 임시 랜덤 매칭 로직 (DB 저장 안 함)
+export const generateRandomTeams = async () => {
   try {
-    // 1. 모든 접속 유저(무소속 및 기존 팀 소속 등 전체 대상으로 하거나 특정 기준)를 가져옴
-    // 여기서는 'users' 콜렉션의 모든 데이터를 가져온다고 가정
     const usersSnap = await getDocs(collection(db, "users"));
     if(usersSnap.empty) {
-        alert("유저가 존재하지 않습니다.");
-        return;
+        throw new Error("유저가 존재하지 않습니다.");
     }
     
     let allUsers = [];
@@ -26,13 +25,9 @@ export const assignRandomTeams = async () => {
         allUsers.push({ id: doc.id, ...doc.data() });
     });
 
-    // 2. 랜덤 셔플
     allUsers = shuffle(allUsers);
 
-    // 3. 5인 기준으로 팀 나누기 로직 (꽉 찬 5인 팀들을 만들고, 나머지는 마지막 팀으로)
     const n = allUsers.length;
-    
-    // 팀별 인원 할당 배열 (예: 7명이면 [5, 2], 12명이면 [5, 5, 2], 3명이면 [3])
     let teamCapacities = [];
     let remaining = n;
     
@@ -46,34 +41,46 @@ export const assignRandomTeams = async () => {
         }
     }
 
-    // 4. 유저를 팀에 분배
     const distributedTeams = [];
     let currentIndex = 0;
     
+    // A, B, C 알파벳 배열 (기본적으로 26개 지원, 필요 이상의 경우 AA 등의 로직은 현재 생략)
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
     for (let i = 0; i < teamCapacities.length; i++) {
         const capacity = teamCapacities[i];
         const teamMembers = allUsers.slice(currentIndex, currentIndex + capacity);
+        const teamAlias = alphabet[i] || `T${i+1}`;
         distributedTeams.push({
-            name: `Team ${i + 1}`,
+            name: `${teamAlias}팀`,
+            systemTeamId: teamAlias, // A, B, C 등 실제 유저 문서에 들어갈 값
             members: teamMembers,
             score: 0,
-            routeId: null // 추후 할당될 루트 아이디
+            routeId: null
         });
         currentIndex += capacity;
     }
 
-    // 5. Firestore에 일괄 업데이트 (기존 팀 데이터가 있다면 초기화 필요 가능)
+    return distributedTeams;
+  } catch (err) {
+    console.error("팀 분배 오류:", err);
+    throw err;
+  }
+}
+
+// 2. 확정 로직 (Firestore 문서 변경 + RTDB 신호 전송)
+export const commitTeamsToDB = async (distributedTeams) => {
+  try {
     const batch = writeBatch(db);
     
-    // 이전에 있던 팀들 삭제 (옵션, 전체 초기화용. 기존 팀 ID를 안다면 삭제)
+    // 기존 팀들 삭제 초기화
     const oldTeamsSnap = await getDocs(collection(db, "teams"));
     oldTeamsSnap.forEach(doc => batch.delete(doc.ref));
 
-    // 새로운 팀 생성
     distributedTeams.forEach((team) => {
         const teamRef = doc(collection(db, "teams"));
-        // 팀원이 아닌 유저 레퍼런스나 ID 목록만 저장하고 UI에서 연동하도록 구성
         const memberIds = team.members.map(m => m.id);
+        
         batch.set(teamRef, {
             name: team.name,
             members: memberIds,
@@ -81,18 +88,37 @@ export const assignRandomTeams = async () => {
             createdAt: new Date().toISOString()
         });
         
-        // 유저 문서에도 팀 ID 기입 (양방향 참조)
+        // 유저 문서에 팀 ID 기입 (알파벳 ID 저장)
         team.members.forEach((m) => {
             const userRef = doc(db, "users", m.id);
-            batch.update(userRef, { teamId: teamRef.id });
+            batch.update(userRef, { teamId: team.systemTeamId });
         });
     });
 
+    // Firestore 트랜잭션 수행
     await batch.commit();
-    alert("랜덤 5인 1조 편성이 성공적으로 완료되었습니다!");
+
+    // 완료 후 Realtime Database에 팀 매칭 완료 신호(Broadcast)
+    const statusRef = ref(rtdb, "gameStatus/teamReady");
+    await set(statusRef, {
+        isReady: true,
+        timestamp: Date.now()
+    });
+
+    // 기존 설계 문서(TeamReady_Implementation.md)에 따라 teams 하위 각 팀의 상태도 ready로 갱신 (유저 편의 및 호환용)
+    const updates = {};
+    distributedTeams.forEach(team => {
+      const playersObj = {};
+      team.members.forEach(m => { playersObj[m.id] = true; });
+      updates[`teams/${team.systemTeamId}/status`] = "ready";
+      updates[`teams/${team.systemTeamId}/players`] = playersObj;
+    });
+    
+    // update를 사용하면 최상위에서 여러 경로를 동시 수정 가능
+    await update(ref(rtdb), updates);
 
   } catch (err) {
-    console.error("팀 분배 오류:", err);
-    alert("팀 생성 중 서버 오류가 발생했습니다.");
+    console.error("팀 확정 오류:", err);
+    throw err;
   }
 }
