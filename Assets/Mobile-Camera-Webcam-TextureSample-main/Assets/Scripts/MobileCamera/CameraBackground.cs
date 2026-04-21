@@ -130,6 +130,7 @@ namespace UniversalCamera
         {
             if (IsWebCamTextureInitialized())
             {
+
                 // 전면이면 음수 처리
                 var calculateAngle = VideoRotationAngle;
                 if (!_webCamDeviceTarget.isFrontFacing)
@@ -146,10 +147,12 @@ namespace UniversalCamera
                     planeToCameraDistance / 10f;
                 float planeToCameraWidth = planeToCameraHeight * _camera.aspect;
 
+
                 // 세로 영상이면 가로 세로 변경
                 transform.localScale = IsPortrait
                     ? new Vector3(planeToCameraHeight, 1f, planeToCameraWidth)
                     : new Vector3(planeToCameraWidth, 1f, planeToCameraHeight);
+
 
                 // 전면 카메라면 좌우 반전(옵션)
                 if (cameraFacingType == CameraFacing.Front)

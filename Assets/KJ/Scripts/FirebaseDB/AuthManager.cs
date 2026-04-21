@@ -53,6 +53,7 @@ public class AuthManager : MonoBehaviour
     public string LoginUserID { get; private set; }
     public string LoginUserName { get; private set; }
 
+    public bool IsTeamReady { get; private set; }
 
     public Dictionary<string, UserData> userDictionary = new();
 
@@ -189,7 +190,10 @@ public class AuthManager : MonoBehaviour
     /// </summary>
     public void SignOut()
     {
+        //Auth에 저장된 계정 초기화
         FirebaseManager.Instance.Auth.SignOut();
+
+        RemoveTeamListener();
 
         Debug.Log("로그아웃 완료");
     }
@@ -197,6 +201,12 @@ public class AuthManager : MonoBehaviour
     #endregion
 
 
+    /// <summary>
+    /// 유저 컬렉션에 UID로 문서 만들고 해당 문서에 데이터 저장까지 레스고 
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="nickname"></param>
+    /// <returns></returns>
     private async Task SaveUserToFirestore(FirebaseUser user , string nickname)
     {
         DocumentReference docRef = FirebaseManager.Instance.Firestore.Collection("users").Document(user.UserId);
@@ -206,6 +216,7 @@ public class AuthManager : MonoBehaviour
         //data["userid"] = user.Email; //아이디 저장
         data["email"] = user.Email; //아이디(이메일) 저장
         data["nickname"] = nickname; //닉네임 저장
+        data["score"] = 0; //개인 wh 저장
 
         await docRef.SetAsync(data);
         Debug.Log($"FireStore users/{user.UserId} 저장 완료");
@@ -244,6 +255,24 @@ public class AuthManager : MonoBehaviour
             case AuthError.TooManyRequests:
                 message = "잠시 후 다시 시도해주세요.";
                 break;
+            case AuthError.MissingEmail:
+                message = "이메일을 입력해주세요.";
+                break;
+
+            case AuthError.MissingPassword:
+                message = "비밀번호를 입력해주세요.";
+                break;
+
+            case AuthError.UserDisabled:
+                message = "비활성화된 계정입니다.";
+                break;
+            case AuthError.AccountExistsWithDifferentCredentials:
+                message = "이미 다른 방식으로 가입된 이메일입니다.";
+                break;
+
+            case AuthError.SessionExpired:
+                message = "세션이 만료됐습니다. 다시 로그인해주세요.";
+                break;
             default:
                 message = $"오류가 발생했습니다. {error}";
                 break;
@@ -258,16 +287,12 @@ public class AuthManager : MonoBehaviour
     /// 팀 구성 이벤트 구독 메서드 호출
     /// </summary>
     /// <param name="teamID"></param>
-    public void AddTeamListener()
-    {
-        //userDictionary[LoginUserID]?.JoinTeam(teamID); //유저 데이터 클래스에 JoinTeam 호출해서 유저의 팀 ID를 로컬로 저장
+    public void AddTeamListener() => FirebaseManager.Instance?.ListenTeamStatus(OnStatusChanged);
 
-        FirebaseManager.Instance.ListenTeamStatus(OnStatusChanged);
-
-    }
-
-
-    public bool IsTeamReady { get; private set; }
+    /// <summary>
+    /// 팀 구성 이벤트 구독 해제 메서드 호출
+    /// </summary>
+    public void RemoveTeamListener() => FirebaseManager.Instance?.UnListenTeamStatus();
 
     /// <summary>
     /// RealTimeDB에 status 값이 변경되었을 때 호출 -> 값이 만약 ready라면 클라측 팀 구성 완료
