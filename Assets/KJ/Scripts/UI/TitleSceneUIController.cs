@@ -59,6 +59,15 @@ public class TitleSceneUIController : MonoBehaviour
         CreateBtn.onClick.AddListener(() => CreateImage.gameObject.SetActive(true));
         CreateCheckBtn.onClick.AddListener(() => OnCreateUI(CreateLoginInputField.text, CreatePWInputField.text , CreateNickNameInputField.text));
     }
+    private IEnumerator Start()
+    {
+        yield return new WaitUntil(() => AuthManager.Instance != null);
+
+        if (AuthManager.Instance != null)
+        {
+            AuthManager.Instance.OnAuthInfo += OnInfoUI;
+        }
+    }
 
     private void OnDisable()
     {

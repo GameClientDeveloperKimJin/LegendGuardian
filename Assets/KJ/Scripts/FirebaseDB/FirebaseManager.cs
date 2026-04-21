@@ -86,9 +86,6 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         Debug.LogError($"{userID} 에 맞는 닉네임이 없습니다. ");
         return null;
     }
-
-
-
     #region 팀 구성
     //private Dictionary<string, DatabaseReference> _teamListeners = new();
     EventHandler<ValueChangedEventArgs> handler = null;
@@ -132,6 +129,9 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     public void UnListenTeamStatus()
     {
         teamRef.ValueChanged -= handler;
+    
+        teamRef = null;
+        handler = null;
     }
     #endregion
 }
