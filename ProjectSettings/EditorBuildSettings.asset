@@ -17,6 +17,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/1_Scenes/SE_Scene/MainPlayScene.unity
     guid: 25cd33911691ce445ad36add8e084bcf
+  - enabled: 1
+    path: Assets/1_Scenes/SE_Scene/MapScene.unity
+    guid: 0273fe3321d53f84fa5e3471b5a8ab4b
+  - enabled: 1
+    path: Assets/1_Scenes/SE_Scene/RankingScene.unity
+    guid: 71a99cdd366b20e48b280f798f1a5520
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
