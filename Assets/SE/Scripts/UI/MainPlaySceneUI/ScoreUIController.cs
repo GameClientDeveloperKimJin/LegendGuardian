@@ -6,8 +6,8 @@ public class ScoreUIController : MonoBehaviour
 {
     [Header("Text")]
     [SerializeField] private TMP_Text scoreText;
-    [SerializeField] private TMP_Text maxScoreText;
     [SerializeField] private TMP_Text scoreProgressText;
+    [SerializeField] private TMP_Text emonStateText;
 
     [Header("Battery UI")]
     [SerializeField] private Image batteryFillImage;
@@ -32,9 +32,6 @@ public class ScoreUIController : MonoBehaviour
         if (scoreText != null)
             scoreText.text = currentScore.ToString();
 
-        if (maxScoreText != null)
-            maxScoreText.text = maxScore.ToString();
-
         if (scoreProgressText != null)
             scoreProgressText.text = $"{currentScore} / {maxScore}";
     }
@@ -44,36 +41,26 @@ public class ScoreUIController : MonoBehaviour
         if (batteryFillImage != null)
             batteryFillImage.fillAmount = normalizedScore;
     }
+    private void SetEmon(Sprite sprite, string state)
+    {
+        if (emonImage != null && sprite != null)
+            emonImage.sprite = sprite;
+
+        if (emonStateText != null)
+            emonStateText.text = state;
+    }
 
     private void UpdateEmon(int score)
     {
-        if (emonImage == null)
-            return;
-
         if (score >= 60)
-        {
-            if (finalSprite != null)
-                emonImage.sprite = finalSprite;
-        }
+            SetEmon(finalSprite, "최종");
         else if (score >= 45)
-        {
-            if (adultSprite != null)
-                emonImage.sprite = adultSprite;
-        }
+            SetEmon(adultSprite, "성체");
         else if (score >= 25)
-        {
-            if (growthSprite != null)
-                emonImage.sprite = growthSprite;
-        }
+            SetEmon(growthSprite, "성장기");
         else if (score >= 10)
-        {
-            if (babySprite != null)
-                emonImage.sprite = babySprite;
-        }
+            SetEmon(babySprite, "아기");
         else
-        {
-            if (eggSprite != null)
-                emonImage.sprite = eggSprite;
-        }
+            SetEmon(eggSprite, "알");
     }
 }
