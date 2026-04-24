@@ -302,10 +302,12 @@ public class AuthManager : MonoBehaviour
     {
         if(status == "ready")
         {
-            if(userDictionary.TryGetValue(LoginUserID,out var userData))
+            string cleanID = LoginUserID.Split('@')[0]; // 이메일 제거
+
+            if (userDictionary.TryGetValue(cleanID, out var userData))
             {
                 Debug.Log($"팀 {userData.TeamID} 구성 완료! ");
-                userDictionary[LoginUserID]?.JoinTeam(userData.TeamID); //유저 데이터 클래스에 JoinTeam 호출해서 유저의 팀 ID를 로컬로 저장
+                userDictionary[cleanID]?.JoinTeam(userData.TeamID); //유저 데이터 클래스에 JoinTeam 호출해서 유저의 팀 ID를 로컬로 저장
                 IsTeamReady = true;
             }
         }
@@ -317,7 +319,8 @@ public class AuthManager : MonoBehaviour
     /// <returns></returns>
     public string GetUserTeamName()
     {
-        if(userDictionary.TryGetValue(LoginUserID, out var userData))
+        string cleanID = LoginUserID.Split('@')[0]; // 이메일 제거
+        if (userDictionary.TryGetValue(cleanID, out var userData))
         {
             return userData.TeamID;
         }

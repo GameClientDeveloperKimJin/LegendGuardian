@@ -217,6 +217,8 @@ public class TitleSceneUIController : MonoBehaviour
         }
 
         teamLoadingCanvas.enabled = false;
+
+        uiRuletCanvas.enabled = true;
         Debug.Log("∆¿ ±∏º∫ øœ∑·! ∑Í∑ø Ω√¿€");
     }
 
