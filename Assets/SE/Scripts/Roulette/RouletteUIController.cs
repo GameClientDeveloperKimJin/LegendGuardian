@@ -157,14 +157,15 @@ public class RouletteUIController : MonoBehaviour
         whiteFlashOverlay.color = overlayColor;
     }
 
-    private void ShowResultPanel()
+    private async void ShowResultPanel()
     {
         if (resultPanel != null)
             resultPanel.SetActive(true);
 
         if (routeNameText != null)
         {
-            routeNameText.text = AuthManager.Instance?.GetUserTeamName();
+            routeNameText.text = await AuthManager.Instance?.GetUserTeamName();
+            Debug.Log("Àü´Þ¹ÞÀº ÆÀ ID" + routeNameText.text);
         }
 
         if (flashImage != null)
