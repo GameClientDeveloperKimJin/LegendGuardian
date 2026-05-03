@@ -5,10 +5,23 @@ using UnityEngine.UI;
 
 public class ScoreUIController : MonoBehaviour
 {
+    [System.Serializable]
+    public class ElementEmonData
+    {
+        [Header("Element Info")]
+        public string elementName;
+        public Sprite eggSprite;
+        public Sprite hatchSprite;
+        public Sprite growthSprite;
+        public Sprite adultSprite;
+        public Sprite finalSprite;
+    }
+
     [Header("Text")]
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text scoreProgressText;
     [SerializeField] private TMP_Text emonStateText;
+    [SerializeField] private TMP_Text elementText;
 
     [Header("Battery UI")]
     [SerializeField] private Image batteryFillImage;
@@ -16,20 +29,21 @@ public class ScoreUIController : MonoBehaviour
 
     [Header("Emon UI")]
     [SerializeField] private Image emonImage;
-    [SerializeField] private Sprite eggSprite;          // 0~9
-    [SerializeField] private Sprite babySprite;         // 10~24
-    [SerializeField] private Sprite growthSprite;       // 25~44
-    [SerializeField] private Sprite adultSprite;        // 45~59
-    [SerializeField] private Sprite finalSprite;        // 60
+
+    [Header("Element Emon Data")]
+    [SerializeField] private ElementEmonData[] elementDataList;
 
     private Coroutine batteryCoroutine;
+    private ElementEmonData currentElementData;
 
-    private void Start()
+    private async void Start()
     {
         if (ScoreManager.Instance != null)
         {
             ScoreManager.Instance.SetUI(this);
         }
+
+        await SetElementByTeam();
     }
 
     public void UpdateUI(int currentScore, int maxScore, float normalizedScore)
@@ -48,6 +62,26 @@ public class ScoreUIController : MonoBehaviour
             scoreProgressText.text = $"{currentScore} / {maxScore}";
     }
 
+    private async System.Threading.Tasks.Task SetElementByTeam()
+    {
+        if (AuthManager.Instance == null)
+            return;
+
+        if (elementDataList == null || elementDataList.Length == 0)
+            return;
+
+        string teamName = await AuthManager.Instance.GetUserTeamName();
+
+        int index = Mathf.Abs(teamName.GetHashCode()) % elementDataList.Length;
+        currentElementData = elementDataList[index];
+
+        if (elementText != null)
+            elementText.text = currentElementData.elementName;
+
+        if (ScoreManager.Instance != null)
+            UpdateEmon(ScoreManager.Instance.CurrentScore);
+    }
+
     private void UpdateBattery(float normalizedScore)
     {
         if (batteryFillImage == null)
@@ -59,6 +93,23 @@ public class ScoreUIController : MonoBehaviour
         batteryCoroutine = StartCoroutine(SmoothBatteryFill(normalizedScore));
     }
 
+    private void UpdateEmon(int score)
+    {
+        if (currentElementData == null)
+            return;
+
+        if (score >= 60)
+            SetEmon(currentElementData.finalSprite, "최종");
+        else if (score >= 45)
+            SetEmon(currentElementData.adultSprite, "성체");
+        else if (score >= 25)
+            SetEmon(currentElementData.growthSprite, "성장기");
+        else if (score >= 10)
+            SetEmon(currentElementData.hatchSprite, "부화");
+        else
+            SetEmon(currentElementData.eggSprite, "알");
+    }
+
     private void SetEmon(Sprite sprite, string state)
     {
         if (emonImage != null && sprite != null)
@@ -68,19 +119,6 @@ public class ScoreUIController : MonoBehaviour
             emonStateText.text = state;
     }
 
-    private void UpdateEmon(int score)
-    {
-        if (score >= 60)
-            SetEmon(finalSprite, "최종");
-        else if (score >= 45)
-            SetEmon(adultSprite, "성체");
-        else if (score >= 25)
-            SetEmon(growthSprite, "성장기");
-        else if (score >= 10)
-            SetEmon(babySprite, "아기");
-        else
-            SetEmon(eggSprite, "알");
-    }
     private IEnumerator SmoothBatteryFill(float targetAmount)
     {
         float startAmount = batteryFillImage.fillAmount;

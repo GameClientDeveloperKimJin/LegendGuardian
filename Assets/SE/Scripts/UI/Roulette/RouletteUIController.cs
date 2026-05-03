@@ -73,7 +73,7 @@ public class RouletteUIController : MonoBehaviour
     {
         if (wheelController == null)
         {
-            Debug.LogError("wheelController가 설정되지 않았습니다.");
+            Debug.LogError("wheelController");
             return;
         }
 
@@ -102,7 +102,7 @@ public class RouletteUIController : MonoBehaviour
     {
         if (flashImage == null || flashRect == null || whiteFlashOverlay == null)
         {
-            Debug.LogWarning("FlashImage, FlashRect, WhiteFlashOverlay 중 설정되지 않은 것이 있습니다.");
+            Debug.LogWarning("FlashImage, FlashRect, WhiteFlashOverlay �??�정?��? ?��? 것이 ?�습?�다.");
             yield break;
         }
 
@@ -137,7 +137,6 @@ public class RouletteUIController : MonoBehaviour
             float scale = Mathf.Lerp(flashStartScale, flashEndScale, radialScaleValue);
             flashRect.localScale = Vector3.one * scale;
 
-            // 화면 전체 천천히 하얘지는 효과
             if (t <= whiteFlashFadeInTime)
             {
                 float fadeInNormalized = Mathf.Clamp01(t / whiteFlashFadeInTime);
@@ -192,7 +191,7 @@ public class RouletteUIController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("다음 씬 이름이 설정되지 않았습니다.");
+            Debug.LogWarning("���� �� null");
         }
     }
 
