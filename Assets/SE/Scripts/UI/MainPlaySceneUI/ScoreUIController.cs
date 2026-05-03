@@ -49,12 +49,17 @@ public class ScoreUIController : MonoBehaviour
     {
         UpdateTexts(currentScore, maxScore);
         UpdateBattery(normalizedScore);
-        UpdateEmon(currentScore);
+        UpdateEmon(currentScore, maxScore);
     }
 
     private void UpdateTexts(int currentScore, int maxScore)
     {
-        if (scoreProgressText != null)
+        if (scoreProgressText == null)
+            return;
+
+        if (maxScore <= 0)
+            scoreProgressText.text = $"{currentScore} / -";
+        else
             scoreProgressText.text = $"{currentScore} / {maxScore}";
     }
 
@@ -75,7 +80,7 @@ public class ScoreUIController : MonoBehaviour
             elementText.text = currentElementData.elementName;
 
         if (ScoreManager.Instance != null)
-            UpdateEmon(ScoreManager.Instance.CurrentScore);
+            UpdateEmon(ScoreManager.Instance.CurrentScore, ScoreManager.Instance.MaxScore);
     }
 
     private void UpdateBattery(float normalizedScore)
@@ -89,18 +94,26 @@ public class ScoreUIController : MonoBehaviour
         batteryCoroutine = StartCoroutine(SmoothBatteryFill(normalizedScore));
     }
 
-    private void UpdateEmon(int score)
+    private void UpdateEmon(int score, int maxScore)
     {
         if (currentElementData == null)
             return;
 
-        if (score >= 60)
+        if (maxScore <= 0)
+        {
+            SetEmon(currentElementData.eggSprite, "알");
+            return;
+        }
+
+        float step = maxScore / 4f;
+
+        if (score >= maxScore)
             SetEmon(currentElementData.finalSprite, "최종");
-        else if (score >= 45)
+        else if (score >= step * 3f)
             SetEmon(currentElementData.adultSprite, "성체");
-        else if (score >= 25)
+        else if (score >= step * 2f)
             SetEmon(currentElementData.growthSprite, "성장기");
-        else if (score >= 10)
+        else if (score >= step)
             SetEmon(currentElementData.hatchSprite, "부화");
         else
             SetEmon(currentElementData.eggSprite, "알");

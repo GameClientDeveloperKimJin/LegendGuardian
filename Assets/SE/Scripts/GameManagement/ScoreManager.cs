@@ -5,15 +5,17 @@ public class ScoreManager : MonoBehaviour
     public static ScoreManager Instance { get; private set; }
 
     [Header("Score Settings")]
-    [SerializeField] private int currentScore = 0;
-    [SerializeField] private int maxScore = 60;
+    private int currentScore = 0;
+    private int maxScore = 0;
 
     [Header("References")]
     [SerializeField] private ScoreUIController scoreUIController;
 
+    private HeaderBarScoreText headerBarScoreText;
+
     public int CurrentScore => currentScore;
     public int MaxScore => maxScore;
-    private HeaderBarScoreText scoreTextUI;
+    public bool HasMaxScore => maxScore > 0;
 
     private void Awake()
     {
@@ -38,27 +40,46 @@ public class ScoreManager : MonoBehaviour
         UpdateAllUI();
     }
 
+    public void SetScoreTextUI(HeaderBarScoreText ui)
+    {
+        headerBarScoreText = ui;
+        UpdateAllUI();
+    }
+
     public void AddScore(int amount)
     {
-        currentScore = Mathf.Clamp(currentScore + amount, 0, maxScore);
+        currentScore = Mathf.Max(0, currentScore + amount);
         UpdateAllUI();
     }
 
     public void SetScore(int value)
     {
-        currentScore = Mathf.Clamp(value, 0, maxScore);
+        currentScore = Mathf.Max(0, value);
         UpdateAllUI();
     }
 
+    // 외부 데이터 연동 시 여기 호출
     public void SetMaxScore(int value)
     {
-        maxScore = Mathf.Max(1, value);
-        currentScore = Mathf.Clamp(currentScore, 0, maxScore);
+        maxScore = Mathf.Max(0, value);
         UpdateAllUI();
+    }
+
+    public bool TrySpendScore(int amount)
+    {
+        if (currentScore < amount)
+            return false;
+
+        currentScore -= amount;
+        UpdateAllUI();
+        return true;
     }
 
     public float GetNormalizedScore()
     {
+        if (maxScore <= 0)
+            return 0f;
+
         return Mathf.Clamp01((float)currentScore / maxScore);
     }
 
@@ -69,14 +90,9 @@ public class ScoreManager : MonoBehaviour
             scoreUIController.UpdateUI(currentScore, maxScore, GetNormalizedScore());
         }
 
-        if (scoreTextUI != null)
+        if (headerBarScoreText != null)
         {
-            scoreTextUI.UpdateScoreText(currentScore);
+            headerBarScoreText.UpdateScoreText(currentScore);
         }
-    }
-    public void SetScoreTextUI(HeaderBarScoreText ui)
-    {
-        scoreTextUI = ui;
-        UpdateAllUI();
     }
 }
