@@ -97,8 +97,8 @@ public class AuthManager : MonoBehaviour
         IsTeamReady = false;
 
         AddTeamListener();
-    }
 
+    }
 
     #region 회원가입 / 로그인 / 로그아웃
     /// <summary>
@@ -185,6 +185,10 @@ public class AuthManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        SignOut();
+    }
     /// <summary>
     /// 로그아웃
     /// </summary>
@@ -302,6 +306,8 @@ public class AuthManager : MonoBehaviour
     {
         if(status == "ready")
         {
+            if (string.IsNullOrEmpty(LoginUserID)) return;
+
             string cleanID = LoginUserID.Split('@')[0]; // 이메일 제거
 
             if (userDictionary.TryGetValue(cleanID, out var userData))
@@ -317,15 +323,16 @@ public class AuthManager : MonoBehaviour
     /// 유저의 팀 이름을 반환
     /// </summary>
     /// <returns></returns>
-    public string GetUserTeamName()
+    public async Task<string> GetUserTeamName()
     {
         string cleanID = LoginUserID.Split('@')[0]; // 이메일 제거
-        if (userDictionary.TryGetValue(cleanID, out var userData))
-        {
-            return userData.TeamID;
-        }
 
-        return null;
+        Debug.Log(cleanID);
+
+        var teamName = await FirebaseManager.Instance.GetUserIDToTeamID(cleanID);
+
+        Debug.Log("팀 ID" + teamName);
+        return teamName;
     }
     
 

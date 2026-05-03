@@ -58,6 +58,8 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         {
             Debug.LogError($"Firebase 의존성 오류: {status}");
         }
+
+
     }
 
 
@@ -84,6 +86,33 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         }
 
         Debug.LogError($"{userID} 에 맞는 닉네임이 없습니다. ");
+        return null;
+    }
+
+    /// <summary>
+    /// 유저 ID를 통해 DB에 저장된 닉네임 가져오기
+    /// </summary>
+    /// <param name="userID"></param>
+    /// <returns></returns>
+    public async Task<string> GetUserIDToTeamID(string userID)
+    {
+        userID += "@giadian.com";
+
+        // users 컬렉션에서 userid 필드값이 userID와 같은 문서를 찾아라.  
+        Firebase.Firestore.Query query = FirebaseManager.Instance.Firestore
+            .Collection("users").WhereEqualTo("email", userID);
+
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        if (snapshot.Count > 0)
+        {
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                return doc.GetValue<string>("teamId");
+            }
+        }
+
+        Debug.LogError($"{userID} 에 맞는 팀 ID가 없습니다. ");
         return null;
     }
     #region 팀 구성
