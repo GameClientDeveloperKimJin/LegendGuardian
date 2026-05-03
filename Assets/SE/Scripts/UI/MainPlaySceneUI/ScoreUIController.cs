@@ -18,7 +18,6 @@ public class ScoreUIController : MonoBehaviour
     }
 
     [Header("Text")]
-    [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text scoreProgressText;
     [SerializeField] private TMP_Text emonStateText;
     [SerializeField] private TMP_Text elementText;
@@ -55,9 +54,6 @@ public class ScoreUIController : MonoBehaviour
 
     private void UpdateTexts(int currentScore, int maxScore)
     {
-        if (scoreText != null)
-            scoreText.text = currentScore.ToString();
-
         if (scoreProgressText != null)
             scoreProgressText.text = $"{currentScore} / {maxScore}";
     }

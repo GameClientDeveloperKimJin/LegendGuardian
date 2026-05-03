@@ -13,6 +13,7 @@ public class ScoreManager : MonoBehaviour
 
     public int CurrentScore => currentScore;
     public int MaxScore => maxScore;
+    private HeaderBarScoreText scoreTextUI;
 
     private void Awake()
     {
@@ -67,5 +68,15 @@ public class ScoreManager : MonoBehaviour
         {
             scoreUIController.UpdateUI(currentScore, maxScore, GetNormalizedScore());
         }
+
+        if (scoreTextUI != null)
+        {
+            scoreTextUI.UpdateScoreText(currentScore);
+        }
+    }
+    public void SetScoreTextUI(HeaderBarScoreText ui)
+    {
+        scoreTextUI = ui;
+        UpdateAllUI();
     }
 }
