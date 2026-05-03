@@ -62,12 +62,16 @@ namespace KJ.FirebaseDB
                 var isReadyObj = args.Snapshot.Child("isReady").Value;
                 if (isReadyObj != null && (bool)isReadyObj == true)
                 {
+                    // 로그인 전 신호는 무시 (구독 유지 - 로그인 후 재감지 가능)
+                    if (FirebaseAuth.DefaultInstance.CurrentUser == null)
+                    {
+                        Debug.LogWarning("TeamReadyObserver: 로그인 전 신호 감지, 무시합니다.");
+                        return;
+                    }
+
                     Debug.Log("TeamReadyObserver: 관리자의 '팀 확정' 신호를 감지했습니다!");
+                    Unsubscribe(); // 성공 확정 시에만 구독 해제
                     FetchMyTeamID();
-                    
-                    // 신호를 한 번 받은 후에는 데이터를 소비(초기화)하거나 구독을 해지할 수 있습니다.
-                    // 여기서는 구독 해지:
-                    Unsubscribe();
                 }
             }
         }

@@ -73,7 +73,7 @@ public class RouletteUIController : MonoBehaviour
     {
         if (wheelController == null)
         {
-            Debug.LogError("wheelController°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError("wheelControllerê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -102,7 +102,7 @@ public class RouletteUIController : MonoBehaviour
     {
         if (flashImage == null || flashRect == null || whiteFlashOverlay == null)
         {
-            Debug.LogWarning("FlashImage, FlashRect, WhiteFlashOverlay Áß ¿¬°áµÇÁö ¾ÊÀº °ÍÀÌ ÀÖ½À´Ï´Ù.");
+            Debug.LogWarning("FlashImage, FlashRect, WhiteFlashOverlay ì¤‘ ì„¤ì •ë˜ì§€ ì•Šì€ ê²ƒì´ ìˆìŠµë‹ˆë‹¤.");
             yield break;
         }
 
@@ -137,7 +137,7 @@ public class RouletteUIController : MonoBehaviour
             float scale = Mathf.Lerp(flashStartScale, flashEndScale, radialScaleValue);
             flashRect.localScale = Vector3.one * scale;
 
-            // È­¸é ÀüÃ¼ ÃµÃµÈ÷ ÇÏ¾êÁö´Â ¿¬Ãâ
+            // í™”ë©´ ì „ì²´ ì²œì²œíˆ í•˜ì–˜ì§€ëŠ” íš¨ê³¼
             if (t <= whiteFlashFadeInTime)
             {
                 float fadeInNormalized = Mathf.Clamp01(t / whiteFlashFadeInTime);
@@ -157,14 +157,15 @@ public class RouletteUIController : MonoBehaviour
         whiteFlashOverlay.color = overlayColor;
     }
 
-    private void ShowResultPanel()
+    private async void ShowResultPanel()
     {
         if (resultPanel != null)
             resultPanel.SetActive(true);
 
         if (routeNameText != null)
         {
-            routeNameText.text = AuthManager.Instance?.GetUserTeamName();
+            routeNameText.text = await AuthManager.Instance?.GetUserTeamName();
+            Debug.Log("Àü´Ş¹ŞÀº ÆÀ ID" + routeNameText.text);
         }
 
         if (flashImage != null)
@@ -191,7 +192,7 @@ public class RouletteUIController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("´ÙÀ½ ¾À ÀÌ¸§ÀÌ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogWarning("ë‹¤ìŒ ì”¬ ì´ë¦„ì´ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
         }
     }
 

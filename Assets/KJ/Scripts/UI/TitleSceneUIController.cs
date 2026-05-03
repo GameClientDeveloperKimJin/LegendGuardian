@@ -8,7 +8,7 @@ using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class TitleSceneUIController : MonoBehaviour
 {
-    [Header("·Î±×ÀÎ °ü·Ã")]
+    [Header("ë¡œê·¸ì¸ ê´€ë ¨")]
     [SerializeField]
     TMP_InputField LoginInputField;
     [SerializeField]
@@ -16,7 +16,7 @@ public class TitleSceneUIController : MonoBehaviour
     [SerializeField]
     Button LoginBtn;
 
-    [Header("Á¤º¸ °ü·Ã")]
+    [Header("ì•ˆë‚´ ê´€ë ¨")]
     [SerializeField]
     Image InfoImage;
     [SerializeField]
@@ -24,7 +24,7 @@ public class TitleSceneUIController : MonoBehaviour
     [SerializeField]
     Button InfoCheckBtn;
 
-    [Header("È¸¿ø°¡ÀÔ °ü·Ã")]
+    [Header("íšŒì›ê°€ì… ê´€ë ¨")]
     [SerializeField]
     Button CreateBtn;
     [SerializeField]
@@ -38,12 +38,12 @@ public class TitleSceneUIController : MonoBehaviour
     [SerializeField]
     TMP_InputField CreateNickNameInputField;
 
-    [Header("ÆÀ ±¸¼º °ü·Ã")]
+    [Header("íŒ€ ë¡œë”© ê´€ë ¨")]
     [SerializeField]
     Canvas teamLoadingCanvas;
     [SerializeField]
     TextMeshProUGUI LodingTMP;
-    [Header("·ê·¿ °ü·Ã")]
+    [Header("ë£°ë › ê´€ë ¨")]
     [SerializeField]
     Canvas uiRuletCanvas;
 
@@ -81,7 +81,7 @@ public class TitleSceneUIController : MonoBehaviour
         CreateBtn.onClick.RemoveAllListeners();
     }
 
-    #region ·Î±×ÀÎ / È¸¿ø°¡ÀÔ 
+    #region ë¡œê·¸ì¸ / íšŒì›ê°€ì…
     private async void OnLoginUI(string id , string pw)
     {
         if(!FirebaseManager.Instance.IsConnect)
@@ -96,7 +96,7 @@ public class TitleSceneUIController : MonoBehaviour
 
         if (id.Contains('@'))
         {
-            OnInfoUI("ID¿¡´Â @¸¦ »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù");
+            OnInfoUI("IDì—ëŠ” @ë¥¼ í¬í•¨í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤");
             return;
         }
 
@@ -107,7 +107,7 @@ public class TitleSceneUIController : MonoBehaviour
             LoginInputField.text = "";
             PWInputField.text = "";
 
-            OnInfoUI("·Î±×ÀÎ ¼º°ø");
+            OnInfoUI("ë¡œê·¸ì¸ ì„±ê³µ");
 
             InfoCheckBtn.onClick.RemoveAllListeners();
             InfoCheckBtn.onClick.AddListener(() =>
@@ -120,7 +120,7 @@ public class TitleSceneUIController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"·Î±×ÀÎ ½ÇÆĞ: {error}"); // Ãß°¡
+            Debug.LogWarning($"ë¡œê·¸ì¸ ì‹¤íŒ¨: {error}");
         }
 
     }
@@ -139,13 +139,13 @@ public class TitleSceneUIController : MonoBehaviour
 
         if (id.Contains('@'))
         {
-            OnInfoUI("ID¿¡´Â @¸¦ »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù");
+            OnInfoUI("IDì—ëŠ” @ë¥¼ í¬í•¨í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤");
             return;
         }
         
         if(string.IsNullOrEmpty(nickName))
         {
-            OnInfoUI("´Ğ³×ÀÓÀ» ÀÔ·ÂÇÏ¼¼¿ä.");
+            OnInfoUI("ë‹‰ë„¤ì„ì„ ì…ë ¥í•˜ì„¸ìš”.");
             return;
         }
 
@@ -157,7 +157,7 @@ public class TitleSceneUIController : MonoBehaviour
             CreatePWInputField.text = "";
             CreateNickNameInputField.text = "";
 
-            OnInfoUI("È¸¿ø°¡ÀÔ ¼º°ø");
+            OnInfoUI("íšŒì›ê°€ì… ì„±ê³µ");
 
             InfoCheckBtn.onClick.RemoveAllListeners();
             InfoCheckBtn.onClick.AddListener(() =>
@@ -168,7 +168,7 @@ public class TitleSceneUIController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"È¸¿ø°¡ÀÔ ½ÇÆĞ: {error}"); // Ãß°¡
+            Debug.LogWarning($"íšŒì›ê°€ì… ì‹¤íŒ¨: {error}");
         }
 
     }
@@ -177,7 +177,7 @@ public class TitleSceneUIController : MonoBehaviour
 
 
     /// <summary>
-    /// ÆÀ Âü°¡ ·ÎµùÃ¢
+    /// íŒ€ ë¡œë”© í™”ë©´
     /// </summary>
     private void TeamLoading()
     {
@@ -187,7 +187,7 @@ public class TitleSceneUIController : MonoBehaviour
     }
 
     [SerializeField]
-    int loadingMaxCount = 3; //Á¡ ÃÖ´ë ¸î°³±îÁö?
+    int loadingMaxCount = 3; //ì  ìµœëŒ€ ê°œìˆ˜
     IEnumerator LoadingTMP()
     {
 
@@ -217,11 +217,13 @@ public class TitleSceneUIController : MonoBehaviour
         }
 
         teamLoadingCanvas.enabled = false;
-        Debug.Log("ÆÀ ±¸¼º ¿Ï·á! ·ê·¿ ½ÃÀÛ");
+
+        uiRuletCanvas.enabled = true;
+        Debug.Log("íŒ€ ë¡œë”© ì™„ë£Œ! ë£°ë › ì‹œì‘");
     }
 
 
-    #region Á¤º¸Ã¢
+    #region ì•ˆë‚´ì°½
     private void OnInfoUI(string message)
     {
         InfoImage.gameObject.SetActive(true);
