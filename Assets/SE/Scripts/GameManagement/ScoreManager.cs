@@ -23,6 +23,7 @@ public class ScoreManager : MonoBehaviour
         }
 
         Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
@@ -30,25 +31,28 @@ public class ScoreManager : MonoBehaviour
         UpdateAllUI();
     }
 
+    public void SetUI(ScoreUIController ui)
+    {
+        scoreUIController = ui;
+        UpdateAllUI();
+    }
+
     public void AddScore(int amount)
     {
-        currentScore += amount;
-
-        if (currentScore < 0)
-            currentScore = 0;
-
+        currentScore = Mathf.Clamp(currentScore + amount, 0, maxScore);
         UpdateAllUI();
     }
 
     public void SetScore(int value)
     {
-        currentScore = Mathf.Max(0, value);
+        currentScore = Mathf.Clamp(value, 0, maxScore);
         UpdateAllUI();
     }
 
     public void SetMaxScore(int value)
     {
         maxScore = Mathf.Max(1, value);
+        currentScore = Mathf.Clamp(currentScore, 0, maxScore);
         UpdateAllUI();
     }
 
