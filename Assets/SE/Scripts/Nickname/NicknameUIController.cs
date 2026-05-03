@@ -101,7 +101,7 @@ public class NicknameUIController : MonoBehaviour
         ShowError("");
         SetLoading(true);
 
-        // ÃßÈÄ Firebase ¿¬°á ÁöÁ¡
+        // ì‹¤ì œ Firebase ì—°ë™ ì˜ˆì •
         bool available = await CheckNicknameAvailable(nickname);
 
         SetLoading(false);
@@ -110,12 +110,12 @@ public class NicknameUIController : MonoBehaviour
         {
             isChecked = true;
             lastCheckedNickname = nickname;
-            ShowCheck("»ç¿ë °¡´ÉÇÑ ´Ğ³×ÀÓÀÔ´Ï´Ù.");
+            ShowCheck("ì‚¬ìš© ê°€ëŠ¥í•œ ë‹‰ë„¤ì„ì…ë‹ˆë‹¤.");
         }
         else
         {
             isChecked = false;
-            ShowError("ÀÌ¹Ì »ç¿ë ÁßÀÎ ´Ğ³×ÀÓÀÔ´Ï´Ù.");
+            ShowError("ì´ë¯¸ ì‚¬ìš© ì¤‘ì¸ ë‹‰ë„¤ì„ì…ë‹ˆë‹¤.");
         }
 
         RefreshUI();
@@ -133,13 +133,13 @@ public class NicknameUIController : MonoBehaviour
 
         if (!isChecked)
         {
-            ShowError("Áßº¹ È®ÀÎÀ» ¸ÕÀú ÇØÁÖ¼¼¿ä.");
+            ShowError("ì¤‘ë³µ í™•ì¸ì„ ë¨¼ì € í•´ì£¼ì„¸ìš”.");
             return;
         }
 
         SetLoading(true);
 
-        // ÃßÈÄ Firebase ¿¬°á ÁöÁ¡
+        // ì‹¤ì œ Firebase ì—°ë™ ì˜ˆì •
         bool success = await RegisterNickname(nickname);
 
         SetLoading(false);
@@ -153,19 +153,19 @@ public class NicknameUIController : MonoBehaviour
         }
         else
         {
-            ShowError("ÀÔÀå ½ÇÆĞ");
+            ShowError("ë“±ë¡ ì‹¤íŒ¨");
         }
     }
 
-// Firebase Ãß°¡
+// Firebase ì¶”ê°€
 
-    async Task<bool> CheckNicknameAvailable(string nickname) //Firebase ºÙÀÏ ¶§ ¼öÁ¤
+    async Task<bool> CheckNicknameAvailable(string nickname) //Firebase ì—°ë™ í›„ ìˆ˜ì •
     {
         await Task.Delay(500);
         return true;
     }
 
-    async Task<bool> RegisterNickname(string nickname) //Firebase ºÙÀÏ ¶§ ¼öÁ¤
+    async Task<bool> RegisterNickname(string nickname) //Firebase ì—°ë™ í›„ ìˆ˜ì •
     {
         await Task.Delay(500);
         return true;
@@ -176,7 +176,7 @@ public class NicknameUIController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(nextSceneName))
         {
             SetLoading(false);
-            ShowError("´ÙÀ½ ¾À ÀÌ¸§ÀÌ ºñ¾î ÀÖ½À´Ï´Ù.");
+            ShowError("ë‹¤ìŒ ì”¬ ì´ë¦„ì´ ë¹„ì–´ ìˆìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -185,7 +185,7 @@ public class NicknameUIController : MonoBehaviour
         if (op == null)
         {
             SetLoading(false);
-            ShowError($"¾À '{nextSceneName}' À»(¸¦) ºÒ·¯¿ÀÁö ¸øÇß½À´Ï´Ù.");
+            ShowError($"ì”¬ '{nextSceneName}'ì„(ë¥¼) ë¶ˆëŸ¬ì˜¤ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.");
             return;
         }
 
