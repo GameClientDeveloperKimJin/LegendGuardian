@@ -548,7 +548,7 @@ MonoBehaviour:
   closeButton: {fileID: 1714852353}
   resultPanel: {fileID: 2115771575}
   routeNameText: {fileID: 485940214}
-  nextSceneName: 
+  nextSceneName: MainPlayScene
   flashImage: {fileID: 1805173449}
   flashRect: {fileID: 1805173448}
   flashDuration: 1.2
