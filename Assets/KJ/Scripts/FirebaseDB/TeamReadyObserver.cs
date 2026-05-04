@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using Firebase.Database;
 using Firebase.Firestore;
@@ -12,11 +13,9 @@ namespace KJ.FirebaseDB
         public static TeamReadyObserver Instance { get; private set; }
 
         private DatabaseReference statusRef;
-        private FirebaseFirestore db; // 실수로 지워진 변수 복구
-        // 이미 확정된 팀 아이디를 캐싱 (Start 시점에 늦게 구독해도 탈 수 있도록)
+        private FirebaseFirestore db;
         public string ConfirmedTeamId { get; private set; }
 
-        // 팀 정보를 가져왔을 때 발동하는 이벤트 (매개변수: 새로 할당된 팀 ID)
         public event Action<string> OnTeamConfirmed;
 
         private void Awake()
@@ -32,19 +31,34 @@ namespace KJ.FirebaseDB
             }
         }
 
-        private void Start()
+        private IEnumerator Start()
         {
-            // Firebase 초기화 후 호출되어야 합니다.
-            // 보통 FirebaseManager 등에서 FirebaseApp.CheckAndFixDependenciesAsync() 이후에 이 스크립트를 활성화하는 것이 좋습니다.
-            Initialize();
+            yield return new WaitUntil(() => FirebaseManager.Instance != null && FirebaseManager.Instance.IsConnect);
+
+            FirebaseAuth.DefaultInstance.StateChanged += OnAuthStateChanged;
+
+            if (FirebaseAuth.DefaultInstance.CurrentUser != null)
+                Initialize();
+        }
+
+        private void OnAuthStateChanged(object sender, EventArgs e)
+        {
+            if (FirebaseAuth.DefaultInstance.CurrentUser != null && statusRef == null)
+            {
+                Initialize();
+            }
+            else if (FirebaseAuth.DefaultInstance.CurrentUser == null)
+            {
+                Unsubscribe();
+                statusRef = null;
+            }
         }
 
         public void Initialize()
         {
-             db = FirebaseFirestore.DefaultInstance;
+            db = FirebaseFirestore.DefaultInstance;
             statusRef = FirebaseDatabase.DefaultInstance.GetReference("gameStatus/teamReady");
 
-            // 상태 변경 리스너 등록
             statusRef.ValueChanged += HandleTeamReadyStatusChanged;
             Debug.Log("TeamReadyObserver: RTDB 'gameStatus/teamReady' 구독 시작");
         }
@@ -126,6 +140,7 @@ namespace KJ.FirebaseDB
         private void OnDestroy()
         {
             Unsubscribe();
+            FirebaseAuth.DefaultInstance.StateChanged -= OnAuthStateChanged;
         }
     }
 }

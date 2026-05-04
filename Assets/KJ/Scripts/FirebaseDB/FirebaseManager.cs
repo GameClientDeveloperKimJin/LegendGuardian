@@ -19,6 +19,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
 
     public bool IsConnect { get; private set; } = false;
 
+    public event Action<long> OnScoreUpdated;
     public void Dispose()
     {
         AuthManager.Instance.SignOut();
@@ -26,11 +27,11 @@ public class FirebaseManager : MonoBehaviour, IDisposable
 
     void Awake()
     {
-        // ½Ì±ÛÅæ ¼³Á¤
-        if (Instance != null) 
-        { 
-            Destroy(gameObject); 
-            return; 
+        // ì‹±ê¸€í†¤ ì„¤ì •
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
         }
 
         Instance = this;
@@ -52,26 +53,56 @@ public class FirebaseManager : MonoBehaviour, IDisposable
      .GetReference("/");
             Auth = FirebaseAuth.DefaultInstance;
             IsConnect = true;
-            Debug.Log("Firebase ÃÊ±âÈ­ ¿Ï·á!");
+            Debug.Log("Firebase ì´ˆê¸°í™” ì™„ë£Œ!");
         }
         else
         {
-            Debug.LogError($"Firebase ÀÇÁ¸¼º ¿À·ù: {status}");
+            Debug.LogError($"Firebase ì¢…ì†ì„± ì˜¤ë¥˜: {status}");
         }
 
 
     }
 
+    /// <summary>
+    /// í˜¸ì¶œ ì‹œ, userID ì¸ìë¥¼ AuthManager.Instance?.LoginUserIDë¡œ ë„˜ê¸°ì‹œê¸¸ ë°”ëë‹ˆë‹¤. 
+    /// </summary>
+    /// <param name="userID"></param>
+    /// <param name="score"></param>
+    /// <returns></returns>
+    public async Task UpdateUserScore(string userID, long score)
+    {
+        Firebase.Firestore.Query query = FirebaseManager.Instance.Firestore
+           .Collection("users").WhereEqualTo("email", userID);
+
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        if (snapshot.Count > 0)
+        {
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                //í´ë¼ê°€ ê³„ì‚°í•˜ë©´ ìŠ¤ë ˆë“œ ê°„ì˜ Race Condition ë°œìƒ ìœ„í—˜ì´ ìˆìŒ. ë”°ë¼ì„œ ì„œë²„ê°€ ì§ì ‘ ê³„ì‚°í•˜ì—¬ ìœ„í—˜ì„ ë°©ì§€í•œë‹¤.
+                await doc.Reference.UpdateAsync("score", FieldValue.Increment(score));
+
+                //long currentScore = doc.GetValue<long>("score");
+                //await doc.Reference.UpdateAsync("score", currentScore + score);
+
+                OnScoreUpdated?.Invoke(score);
+                return;
+            }
+        }
+
+        Debug.LogError($"{userID} ì— ë§ëŠ” ìœ ì €ê°€ ì—†ìŠµë‹ˆë‹¤. ");
+    }
 
 
     /// <summary>
-    /// À¯Àú ID¸¦ ÅëÇØ DB¿¡ ÀúÀåµÈ ´Ğ³×ÀÓ °¡Á®¿À±â
+    /// ìœ ì € IDë¡œ ìœ ì € DBì— ì €ì¥ëœ ë‹‰ë„¤ì„ì„ ê°€ì ¸ì˜µë‹ˆë‹¤
     /// </summary>
     /// <param name="userID"></param>
     /// <returns></returns>
     public async Task<string> GetUserIDToNickName(string userID)
     {
-        // users ÄÃ·º¼Ç¿¡¼­ userid ÇÊµå°ªÀÌ userID¿Í °°Àº ¹®¼­¸¦ Ã£¾Æ¶ó.  
+        // users ì»¬ë ‰ì…˜ì—ì„œ userid í•„ë“œê°’ì´ userIDì™€ ê°™ì€ ë¬¸ì„œë¥¼ ì°¾ì•„ë¼.
         Firebase.Firestore.Query query = FirebaseManager.Instance.Firestore
             .Collection("users").WhereEqualTo("email", userID);
 
@@ -85,12 +116,37 @@ public class FirebaseManager : MonoBehaviour, IDisposable
             }
         }
 
-        Debug.LogError($"{userID} ¿¡ ¸Â´Â ´Ğ³×ÀÓÀÌ ¾ø½À´Ï´Ù. ");
+        Debug.LogError($"{userID} ì— ë§ëŠ” ë‹‰ë„¤ì„ì´ ì—†ìŠµë‹ˆë‹¤. ");
         return null;
     }
 
     /// <summary>
-    /// À¯Àú ID¸¦ ÅëÇØ DB¿¡ ÀúÀåµÈ ´Ğ³×ÀÓ °¡Á®¿À±â
+    /// ìœ ì € IDë¡œ ìœ ì € DBì— ì €ì¥ëœ ì ìˆ˜ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤
+    /// </summary>
+    /// <param name="userID"></param>
+    /// <returns></returns>
+    public async Task<string> GetUserIDToScore(string userID)
+    {
+        // users ì»¬ë ‰ì…˜ì—ì„œ userid í•„ë“œê°’ì´ userIDì™€ ê°™ì€ ë¬¸ì„œë¥¼ ì°¾ì•„ë¼.
+        Firebase.Firestore.Query query = FirebaseManager.Instance.Firestore
+            .Collection("users").WhereEqualTo("email", userID);
+
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        if (snapshot.Count > 0)
+        {
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                return doc.GetValue<long>("score").ToString();
+            }
+        }
+
+        Debug.LogError($"{userID} ì— ë§ëŠ” ì ìˆ˜ê°€ ì—†ìŠµë‹ˆë‹¤. ");
+        return null;
+    }
+
+    /// <summary>
+    /// ìœ ì € IDë¡œ ìœ ì € DBì— ì €ì¥ëœ íŒ€ ID ê°€ì ¸ì˜µë‹ˆë‹¤
     /// </summary>
     /// <param name="userID"></param>
     /// <returns></returns>
@@ -98,7 +154,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     {
         userID += "@giadian.com";
 
-        // users ÄÃ·º¼Ç¿¡¼­ userid ÇÊµå°ªÀÌ userID¿Í °°Àº ¹®¼­¸¦ Ã£¾Æ¶ó.  
+        // users ì»¬ë ‰ì…˜ì—ì„œ userid í•„ë“œê°’ì´ userIDì™€ ê°™ì€ ë¬¸ì„œë¥¼ ì°¾ì•„ë¼.
         Firebase.Firestore.Query query = FirebaseManager.Instance.Firestore
             .Collection("users").WhereEqualTo("email", userID);
 
@@ -112,21 +168,21 @@ public class FirebaseManager : MonoBehaviour, IDisposable
             }
         }
 
-        Debug.LogError($"{userID} ¿¡ ¸Â´Â ÆÀ ID°¡ ¾ø½À´Ï´Ù. ");
+        Debug.LogError($"{userID} ì— ë§ëŠ” íŒ€ IDê°€ ì—†ìŠµë‹ˆë‹¤. ");
         return null;
     }
-    #region ÆÀ ±¸¼º
+
+    #region íŒ€ ìƒíƒœ
     //private Dictionary<string, DatabaseReference> _teamListeners = new();
     EventHandler<ValueChangedEventArgs> handler = null;
     DatabaseReference teamRef;
     /// <summary>
-    /// ÆÀ »óÅÂ ±¸µ¶ ½ÃÀÛ ( RealTimeDB¿¡ stauts °ª ÀÖÀ½. ÇØ´ç °ª ¹Ù²ğ ¶§ onChanged ¹ßÇà ) 
+    /// íŒ€ ìƒíƒœ ë³€ê²½ ê°ì§€ ( RealTimeDBì˜ status ê°’ ê°ì§€. í•´ë‹¹ ê°’ ë°”ë€” ë•Œ onChanged í˜¸ì¶œ )
     /// </summary>
-    /// <param name="teamID"></param>
     /// <param name="onChanged"></param>
     public void ListenTeamStatus(Action<string> onChanged)
     {
-        //Áßº¹ ±¸µ¶ ¹æÁö
+        //ì¤‘ë³µ êµ¬ë… ë°©ì§€
         //if(_teamListeners.ContainsKey(teamID))
         //{
         //    return;
@@ -135,30 +191,29 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         // DatabaseReference teamRef = RealtimeDB.Child("teams").Child(teamID).Child("status");
         teamRef = RealtimeDB.Child("teams").Child("status");
 
-        handler = (sender, args) => //args : Firebase°¡ ³Ñ°ÜÁÖ´Â µ¥ÀÌÅÍ
+        handler = (sender, args) => //args : Firebaseê°€ ë„˜ê²¨ì£¼ëŠ” ë°ì´í„°
         {
-            if(args.DatabaseError != null) //µ¥ÀÌÅÍ¿¡¼­ db ¿¡·¯ ³¯ °æ¿ì return
+            if(args.DatabaseError != null) //ë°ì´í„°ì—ì„œ db ì˜¤ë¥˜ ì‹œ ë¡œê·¸ return
             {
-                Debug.LogError($"ÆÀ »óÅÂ ¸®½º³Ê ¿À·ù: {args.DatabaseError.Message}");
+                Debug.LogError($"íŒ€ ìƒíƒœ ê°ì§€ ì˜¤ë¥˜: {args.DatabaseError.Message}");
                 return;
             }
 
-            string status = args.Snapshot.Value?.ToString();  //2. stauts °ª ÀĞÀ½
-            onChanged?.Invoke(status); //3. Äİ¹é ÇÔ¼ö¿¡°Ô ¹®ÀÚ¿­ ³Ñ±è
+            string status = args.Snapshot.Value?.ToString();  //2. status ê°’ ì½ê¸°
+            onChanged?.Invoke(status); //3. ì½œë°± í•¨ìˆ˜ì—ê²Œ ë¬¸ìì—´ ë„˜ê¸°ê¸°
         };
 
-        teamRef.ValueChanged += handler; //1. status °ª º¯°æ µÇ¸é À§ handler ¶÷´Ù½Ä ½ÇÇà
+        teamRef.ValueChanged += handler; //1. status ê°’ ë³€ê²½ ë˜ë©´ ìœ„ handler ì¬í˜¸ì¶œ ì„¤ì •
         //_teamListeners[teamID] = teamRef;
      }
 
     /// <summary>
-    /// ÆÀ »óÅÂ ±¸µ¶ ÇØÁ¦ ( ÆÀ ±¸¼º ¿Ï·á ÈÄ, °ÔÀÓ ¾ÀÀ¸·Î ÀüÈ¯ µÉ ¶§ ÇØÁ¦ ÇÊ¿äÇÔ ) 
+    /// íŒ€ ìƒíƒœ ê°ì§€ í•´ì œ ( íŒ€ êµ¬ì„± ì™„ë£Œ ì‹œ, ë‹¤ë¥¸ í™”ë©´ìœ¼ë¡œ ì „í™˜ í›„ ë” ê°ì§€ ë¶ˆí•„ìš” )
     /// </summary>
-    /// <param name="teamID"></param>
     public void UnListenTeamStatus()
     {
         teamRef.ValueChanged -= handler;
-    
+
         teamRef = null;
         handler = null;
     }
