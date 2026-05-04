@@ -1715,8 +1715,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 791e57a61844c5d4492282a4a05ecc8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentScore: 0
-  maxScore: 60
   scoreUIController: {fileID: 1310420693}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

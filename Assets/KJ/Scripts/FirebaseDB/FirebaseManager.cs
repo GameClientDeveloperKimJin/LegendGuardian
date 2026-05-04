@@ -59,19 +59,22 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         {
             Debug.LogError($"Firebase 종속성 오류: {status}");
         }
-
-
     }
 
+    #region 팀 ID를 통해 routes 컬렉션 데이터 가져오기
+
+    #endregion
+
+    #region users 컬렉션 데이터 가져오기
     /// <summary>
     /// 호출 시, userID 인자를 AuthManager.Instance?.LoginUserID로 넘기시길 바랍니다. 
     /// </summary>
     /// <param name="userID"></param>
     /// <param name="score"></param>
     /// <returns></returns>
-    public async Task UpdateUserScore(string userID, long score)
+    public async Task UpdateUserScore(string userID, long score) //특정 유저에 점수 업데이트
     {
-        Firebase.Firestore.Query query = FirebaseManager.Instance.Firestore
+        Firebase.Firestore.Query query = Firestore
            .Collection("users").WhereEqualTo("email", userID);
 
         QuerySnapshot snapshot = await query.GetSnapshotAsync();
@@ -94,7 +97,26 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         Debug.LogError($"{userID} 에 맞는 유저가 없습니다. ");
     }
 
+    /// <summary>
+    /// 유저 ID를 통해 users 컬렉션에 있는 데이터들을 딕셔너리로 가져오기
+    /// 방식 : var data  = await FirebaseManager.Instance.GetUserAllData(유저id);
+    /// string nickname = data["nickname"].ToString();
+    /// 
+    /// 유저id 넘길 때, @giadian.com 붙여야 함
+    /// </summary>
+    /// <param name="userID"></param>
+    /// <returns></returns>
+    public async Task<Dictionary<string,object>> GetUserAllData(string userID)
+    {
+        DocumentSnapshot doc = await Firestore.Collection("users").Document(userID).GetSnapshotAsync();
 
+        if(doc.Exists)
+        {
+            return doc.ToDictionary();
+        }
+
+        return null;
+    }
     /// <summary>
     /// 유저 ID로 유저 DB에 저장된 닉네임을 가져옵니다
     /// </summary>
@@ -103,7 +125,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     public async Task<string> GetUserIDToNickName(string userID)
     {
         // users 컬렉션에서 userid 필드값이 userID와 같은 문서를 찾아라.
-        Firebase.Firestore.Query query = FirebaseManager.Instance.Firestore
+        Firebase.Firestore.Query query = Firestore
             .Collection("users").WhereEqualTo("email", userID);
 
         QuerySnapshot snapshot = await query.GetSnapshotAsync();
@@ -128,7 +150,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     public async Task<string> GetUserIDToScore(string userID)
     {
         // users 컬렉션에서 userid 필드값이 userID와 같은 문서를 찾아라.
-        Firebase.Firestore.Query query = FirebaseManager.Instance.Firestore
+        Firebase.Firestore.Query query = Firestore
             .Collection("users").WhereEqualTo("email", userID);
 
         QuerySnapshot snapshot = await query.GetSnapshotAsync();
@@ -171,6 +193,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         Debug.LogError($"{userID} 에 맞는 팀 ID가 없습니다. ");
         return null;
     }
+    #endregion
 
     #region 팀 상태
     //private Dictionary<string, DatabaseReference> _teamListeners = new();
