@@ -4,6 +4,7 @@ using Firebase.Database;
 using Firebase.Firestore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -62,6 +63,29 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     }
 
     #region 팀 ID를 통해 routes 컬렉션 데이터 가져오기
+    public async Task<(string[] zoneOrder, string[] zoneOrderNames)> GetTeamIDToRoutes(string teamID)
+    {
+        Firebase.Firestore.Query query = Firestore.Collection("routes").WhereArrayContains("teamIds", teamID);
+
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        if (snapshot.Count > 0)
+        {
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                string[] zoneOrder = doc.GetValue<List<object>>("zoneOrder").Select(o => o.ToString()).ToArray();
+                string[] zoneOrderNames = doc.GetValue<List<object>>("zoneOrderNames").Select(o => o.ToString()).ToArray();
+
+                return (zoneOrder, zoneOrderNames);
+            }
+        }
+
+        Debug.LogError($"{teamID} 에 맞는 루트가 없습니다. ");
+
+        return (null, null);
+    }
+
+
 
     #endregion
 

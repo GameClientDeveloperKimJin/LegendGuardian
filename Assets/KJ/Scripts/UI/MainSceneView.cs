@@ -4,14 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public interface IMainSceneView
-{
-    public void OnRouteFirstButton();
-    public void OnRouteSecondButton();
-    public void OnRouteThirdButton();
-
-}
-public class MainSceneView : MonoBehaviour , IMainSceneView
+public class MainSceneView : MonoBehaviour 
 {
     [SerializeField]
     TextMeshProUGUI nickNameTMP;
@@ -19,15 +12,12 @@ public class MainSceneView : MonoBehaviour , IMainSceneView
     [SerializeField]
     TextMeshProUGUI scoreTMP;
 
-    private MainScenePresenter presenter;
+    [SerializeField]
+    Button routeButtonPrefab; //생성할 버튼 프리펩
 
     [SerializeField]
-    Button[] routeButton = new Button[4];
+    Transform routeButtonContent; //생성할 버튼의 위치
 
-    private void Awake()
-    {
-        presenter = new MainScenePresenter(this);
-    }
     private IEnumerator Start()
     {
         yield return new WaitUntil(() => AuthManager.Instance != null);
@@ -43,20 +33,85 @@ public class MainSceneView : MonoBehaviour , IMainSceneView
         FirebaseManager.Instance.OnScoreUpdated -= OnScoreUpdate;
     }
 
+    Button[] routeButtons;
+
     /// <summary>
     /// 메인 씬 전환 시, 초기화 할 내용 ( 1회성)
     /// </summary>
     private async void Init()
     {
         // 닉네임 적용 및 wh 적용 
-        nickNameTMP.text = AuthManager.Instance?.LoginUserName;
+        nickNameTMP.text = AuthManager.Instance.LoginUserName;
 
-        scoreTMP.text = await FirebaseManager.Instance?.GetUserIDToScore(AuthManager.Instance?.LoginUserID);
-        
+        scoreTMP.text = await FirebaseManager.Instance.GetUserIDToScore(AuthManager.Instance?.LoginUserID);
+
         // 팀에 맞는 루트 버튼 동적 생성
+        string teamID = await AuthManager.Instance.GetUserTeamName();
 
-        
+        var (routesID,routesName) = await FirebaseManager.Instance.GetTeamIDToRoutes(teamID);
+
+        routeButtons = new Button[routesID.Length];
+
+        for (int i = 0; i < routesID.Length; i++)
+        {
+            routeButtons[i] = Instantiate(routeButtonPrefab, routeButtonContent);
+            routeButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = routesName[i];
+
+            routeButtons[i].GetComponent<RouteButtonItem>().Init(i,routesID[i], routesName[i]); //버튼 인덱스 번호, 루트 ID , 루트 네임
+        }
+
+
     }
+
+    /// <summary>
+    /// 두번째 루트 버튼 활성화 
+    /// </summary>
+    public void OnSecondRouteButtonActive()
+    {
+        for (int i = 0; i < routeButtons.Length; i++)
+        {
+
+        }
+        //첫번째 루트 버튼 -> 체크 표시 ,버튼 클릭 불가 
+        //두번째 루트 버튼 색상 변경 -> 기존 회색에서 흰색으로 변경 , 버튼 클릭 가능 
+        //나머지 버튼 -> 기존 회색 유지 , 버튼 클릭 불가
+    }
+
+
+    /// <summary>
+    /// 세번째 루트 버튼 활성화 
+    /// </summary>
+    public void OnThirdRouteButtonActive()
+    {
+        for (int i = 0; i < routeButtons.Length; i++)
+        {
+
+        }
+        //첫번째 루트 버튼 -> 체크 표시 , 버튼 클릭 불가 
+        //두번째 루트 버튼 -> 체크 표시 , 버튼 클릭 불가
+
+        //세번째 루트 버튼 색상 변경 -> 기존 회색에서 흰색으로 변경 , 버튼 클릭 가능 
+
+        //나머지 버튼 -> 기존 회색 유지 , 버튼 클릭 불가
+    }
+
+
+    /// <summary>
+    /// 네번쨰 루트 버튼 활성화 
+    /// </summary>
+    public void OnFourRouteButtonActive()
+    {
+        for (int i = 0; i < routeButtons.Length; i++)
+        {
+
+        }
+        //첫번째 루트 버튼 -> 체크 표시 , 버튼 클릭 불가 
+        //두번째 루트 버튼 -> 체크 표시 , 버튼 클릭 불가
+        //세번째 루트 버튼 -> 체크 표시 , 버튼 클릭 불가
+
+        //4번째 루트 버튼 색상 변경 -> 기존 회색에서 흰색으로 변경 , 버튼 클릭 가능 
+    }
+
 
     /// <summary>
     /// 업데이트 된 wH 적용
@@ -67,18 +122,4 @@ public class MainSceneView : MonoBehaviour , IMainSceneView
         scoreTMP.text = score.ToString();
     }
 
-    public void OnRouteFirstButton()
-    {
-        
-    }
-
-    public void OnRouteSecondButton()
-    {
-        
-    }
-
-    public void OnRouteThirdButton()
-    {
-        
-    }
 }
