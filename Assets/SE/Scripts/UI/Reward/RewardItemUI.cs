@@ -12,7 +12,8 @@ public class RewardItemUI : MonoBehaviour
     [Header("Button")]
     [SerializeField] private Button exchangeButton;
 
-    [SerializeField] private int debugScore = 50; //테스트용입니당
+    [SerializeField] private int debugScore = 50;
+
     private RewardData data;
     private RewardListUIController controller;
 
@@ -56,17 +57,6 @@ public class RewardItemUI : MonoBehaviour
         if (data == null || controller == null)
             return;
 
-        bool success = true;
-
-        if (ScoreManager.Instance != null) //교환 버튼 누를 시 점수 차감
-        {
-            success = ScoreManager.Instance.TrySpendScore(data.cost);
-        }
-
-        if (success)
-        {
-            controller.ShowPopup(data.popupMessage);
-            controller.RefreshAllItems();
-        }
+        controller.ShowExchangePopup(data.popupMessage);
     }
 }

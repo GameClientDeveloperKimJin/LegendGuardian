@@ -172,7 +172,9 @@ MonoBehaviour:
   contentParent: {fileID: 1211194159}
   popupPanel: {fileID: 737927588}
   popupText: {fileID: 737927587}
+  loadingText: {fileID: 737927589}
   popupCloseButton: {fileID: 737927586}
+  loadingCharDelay: 0.25
 --- !u!1 &167627928
 GameObject:
   m_ObjectHideFlags: 0
@@ -750,6 +752,17 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7265997336804413037, guid: 44fa18f545fd9fe43bf267986fbff837, type: 3}
   m_PrefabInstance: {fileID: 737927584}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &737927589 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1830300998867030837, guid: 44fa18f545fd9fe43bf267986fbff837, type: 3}
+  m_PrefabInstance: {fileID: 737927584}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &782090326
 PrefabInstance:
   m_ObjectHideFlags: 0
