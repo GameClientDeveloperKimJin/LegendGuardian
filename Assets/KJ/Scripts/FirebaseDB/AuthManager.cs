@@ -96,8 +96,6 @@ public class AuthManager : MonoBehaviour
 
         IsTeamReady = false;
 
-        AddTeamListener();
-
     }
 
     #region 회원가입 / 로그인 / 로그아웃
@@ -169,6 +167,8 @@ public class AuthManager : MonoBehaviour
 
             Debug.Log($"로그인 성공 - 로그인 한 ID : {result.User.Email}");
 
+            AddTeamListener();
+
             return (true, null); // true : 성공 , null : 에러 없음
         }
         catch (FirebaseException e)
@@ -221,6 +221,7 @@ public class AuthManager : MonoBehaviour
         data["email"] = user.Email; //아이디(이메일) 저장
         data["nickname"] = nickname; //닉네임 저장
         data["score"] = 0; //개인 wh 저장
+        data["role"] = "student";
 
         await docRef.SetAsync(data);
         Debug.Log($"FireStore users/{user.UserId} 저장 완료");

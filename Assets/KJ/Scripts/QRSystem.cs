@@ -8,7 +8,7 @@ public class QRSystem : MonoBehaviour
 {
     private BarcodeReader qrReader;
     private CancellationTokenSource ct;
-    [Tooltip("½ºÄµ µô·¹ÀÌ(ÃÊ)")]
+    [Tooltip("ìŠ¤ìº” ë”œë ˆì´(ì´ˆ)")]
     [SerializeField]
     private float ScanDealy = 0.2f;
     private void Awake()
@@ -23,7 +23,8 @@ public class QRSystem : MonoBehaviour
     }
     private async void StartQRScanning()
     {
-        while(!ct.Token.IsCancellationRequested)
+        CancellationToken token = ct.Token;
+        while(!token.IsCancellationRequested)
         {
             await ProcessQRScanning();
             await Awaitable.WaitForSecondsAsync(ScanDealy);
@@ -38,17 +39,17 @@ public class QRSystem : MonoBehaviour
             return;
         }
 
-        await Awaitable.MainThreadAsync(); //È¤½Ã ¸ğ¸£´Ï±î ¾Æ·¡ GetPixels32()´Â ¸ŞÀÎ½º·¹µå¿¡¼­ »ç¿ë 
+        await Awaitable.MainThreadAsync(); //í˜¹ì‹œ ëª¨ë¥´ë‹ˆê¹Œ ì•„ë˜ GetPixels32()ë¥¼ ë©”ì¸ìŠ¤ë ˆë“œì—ì„œ ìˆ˜í–‰
         Color32[] pixelData = cameraTexture.GetPixels32();
 
-        await Awaitable.BackgroundThreadAsync(); //¾Æ·¡ ÁÙÀº ¹«°Ì±â ¶§¹®¿¡ ¹é±×¶ó¿îµå ÇÁ·Î¼¼½º·Î ½ÇÇà.
+        await Awaitable.BackgroundThreadAsync(); //ì•„ë˜ ì—°ì‚° ë¬´ê²ê¸° ë•Œë¬¸ì— ë©”ì¸ìŠ¤ë ˆë“œ ë¸”ë¡œí‚¹ ë°©ì§€.
 
         Result result = qrReader.Decode(pixelData, cameraTexture.width, cameraTexture.height);
 
         if(result != null)
         {
-            await Awaitable.MainThreadAsync(); //¾Æ·¡ ·Î±×´Â ¹é±×¶ó¿îµå ½º·¹µå°¡ ¾Æ´Ñ À¯´ÏÆ¼ÀÇ ¸ŞÀÎ½º·¹µåÀÌ¹Ç·Î, ¸ŞÀÎ½º·¹µå Async() »ç¿ë 
-            Debug.Log(result.Text); //°á°ú°ª ÀĞ±â´Â ¸ŞÀÎ ¾²·¹µå¿¡¼­ Ã³¸® 
+            await Awaitable.MainThreadAsync(); //ì•„ë˜ ë¡œê·¸ëŠ” ë©”ì¸ìŠ¤ë ˆë“œê°€ ì•„ë‹Œ ìœ ë‹ˆí‹°ì˜ ë©”ì¸ìŠ¤ë ˆë“œì´ë¯€ë¡œ, ë©”ì¸ìŠ¤ë ˆë“œ Async() í•„ìš”
+            Debug.Log(result.Text); //ê²°ê³¼ë¥¼ ì½ê³ ë‚œ ë’¤ ë©”ì¸ìŠ¤ë ˆë“œì—ì„œ ì²˜ë¦¬
         }
 
     }
