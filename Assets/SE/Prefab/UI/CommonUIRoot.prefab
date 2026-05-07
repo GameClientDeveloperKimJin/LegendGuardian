@@ -798,6 +798,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2975092119871249882}
+  - component: {fileID: 8402434108129813345}
   m_Layer: 0
   m_Name: CommonUIRoot
   m_TagString: Untagged
@@ -822,6 +823,20 @@ Transform:
   - {fileID: 8481542827115243291}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8402434108129813345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5611366785555977284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58822ad214f2b3748b7acf866394b0b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nickNameText: {fileID: 2055503277932894263}
+  scoreText: {fileID: 1665567648409633403}
 --- !u!1 &6408115157829809844
 GameObject:
   m_ObjectHideFlags: 0
@@ -1062,7 +1077,6 @@ GameObject:
   - component: {fileID: 3112390298342788255}
   - component: {fileID: 416995753630601982}
   - component: {fileID: 1665567648409633403}
-  - component: {fileID: 7956377382607764546}
   m_Layer: 5
   m_Name: ScoreValue
   m_TagString: Untagged
@@ -1188,16 +1202,3 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &7956377382607764546
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8741889604590381531}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58822ad214f2b3748b7acf866394b0b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scoreText: {fileID: 1665567648409633403}

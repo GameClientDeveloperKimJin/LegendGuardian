@@ -754,7 +754,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: CommonUIRoot
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7956377382607764546, guid: 6c693a5bfb7c37047ab1032e333cd00b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

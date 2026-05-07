@@ -35,14 +35,57 @@ public class ScoreUIController : MonoBehaviour
     private Coroutine batteryCoroutine;
     private ElementEmonData currentElementData;
 
-    private async void Start()
+    private IEnumerator Start()
     {
-        if (ScoreManager.Instance != null)
+        yield return new WaitUntil(() => AuthManager.Instance != null);
+        yield return new WaitUntil(() => FirebaseManager.Instance != null);
+        yield return new WaitUntil(() => ScoreManager.Instance != null);
+
+        ScoreManager.Instance.SetUI(this);
+
+        yield return SetElementCoroutine();
+        yield return LoadCurrentScoreCoroutine();
+
+        FirebaseManager.Instance.OnScoreUpdated += OnScoreUpdated;
+    }
+
+    private void OnDestroy()
+    {
+        if (FirebaseManager.Instance != null)
         {
-            ScoreManager.Instance.SetUI(this);
+            FirebaseManager.Instance.OnScoreUpdated -= OnScoreUpdated;
         }
 
-        await SetElementByTeam();
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.SetUI(null);
+        }
+    }
+
+    private IEnumerator SetElementCoroutine()
+    {
+        var task = SetElementByTeam();
+        yield return new WaitUntil(() => task.IsCompleted);
+    }
+
+    private IEnumerator LoadCurrentScoreCoroutine()
+    {
+        var task = FirebaseManager.Instance.GetUserIDToScore(AuthManager.Instance.LoginUserID);
+
+        yield return new WaitUntil(() => task.IsCompleted);
+
+        int currentScore = 0;
+        int.TryParse(task.Result, out currentScore);
+
+        ScoreManager.Instance.SetScore(currentScore);
+    }
+
+    private void OnScoreUpdated(long score)
+    {
+        if (ScoreManager.Instance == null)
+            return;
+
+        ScoreManager.Instance.SetScore((int)score);
     }
 
     public void UpdateUI(int currentScore, int maxScore, float normalizedScore)
@@ -80,7 +123,9 @@ public class ScoreUIController : MonoBehaviour
             elementText.text = currentElementData.elementName;
 
         if (ScoreManager.Instance != null)
+        {
             UpdateEmon(ScoreManager.Instance.CurrentScore, ScoreManager.Instance.MaxScore);
+        }
     }
 
     private void UpdateBattery(float normalizedScore)
