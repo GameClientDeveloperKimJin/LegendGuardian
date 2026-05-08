@@ -46,32 +46,55 @@ public class ScoreManager : MonoBehaviour
         UpdateAllUI();
     }
 
-    public void AddScore(int amount)
+    // 점수 추가 + Firebase 저장
+    public async void AddScore(int amount)
     {
         currentScore = Mathf.Max(0, currentScore + amount);
+
         UpdateAllUI();
+
+        if (FirebaseManager.Instance != null &&
+            AuthManager.Instance != null)
+        {
+            await FirebaseManager.Instance.UpdateUserScore(
+                AuthManager.Instance.LoginUserID,
+                currentScore
+            );
+        }
     }
 
+    // Firebase에서 불러온 점수 세팅용
     public void SetScore(int value)
     {
         currentScore = Mathf.Max(0, value);
         UpdateAllUI();
     }
 
-    // 외부 데이터 연동 시 여기 호출
     public void SetMaxScore(int value)
     {
         maxScore = Mathf.Max(0, value);
         UpdateAllUI();
     }
 
+    // 점수 사용 + Firebase 저장
     public bool TrySpendScore(int amount)
     {
         if (currentScore < amount)
             return false;
 
         currentScore -= amount;
+
         UpdateAllUI();
+
+        if (FirebaseManager.Instance != null &&
+            AuthManager.Instance != null)
+        {
+            _ = FirebaseManager.Instance.UpdateUserScore(
+                AuthManager.Instance.LoginUserID,
+                currentScore
+            );
+        }
+
         return true;
     }
 
@@ -87,7 +110,11 @@ public class ScoreManager : MonoBehaviour
     {
         if (scoreUIController != null)
         {
-            scoreUIController.UpdateUI(currentScore, maxScore, GetNormalizedScore());
+            scoreUIController.UpdateUI(
+                currentScore,
+                maxScore,
+                GetNormalizedScore()
+            );
         }
 
         if (headerBarScoreText != null)

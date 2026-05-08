@@ -21,16 +21,29 @@ public class RouteButtonItem : MonoBehaviour
         this.routeID = routeID;
         this.routeName = routeName;
 
+        routeButton = GetComponent<Button>();
+
         //초기에는 첫번째 버튼만 활성화 -> 팀마다 루트 순서가 정해져 있어서 그럼
         if (index != 0)
         {
             routeButton.interactable = false;
 
-            ColorBlock cb = routeButton.colors;
-            cb.disabledColor = Color.grey;
-            routeButton.colors = cb;
+            ColorGrayButton();
         }
-        //TODO KJ - 버튼 클릭 이벤트 등록 및 루트 id에 해당 하는 미션 내용 가져오기
+
     }
 
+    public void ColorGrayButton()
+    {
+        ColorBlock cb = routeButton.colors;
+        cb.disabledColor = Color.grey;
+        routeButton.colors = cb;
+    }
+
+    public void ColorWhiteButton()
+    {
+        ColorBlock cb = routeButton.colors;
+        cb.disabledColor = Color.white;
+        routeButton.colors = cb;
+    }
 }

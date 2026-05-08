@@ -62,6 +62,51 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         }
     }
 
+    public async Task<Dictionary<string, object>> GetMissionAllData(string missionID)
+    {
+        DocumentSnapshot doc = await Firestore.Collection("missions").Document(missionID).GetSnapshotAsync();
+
+        if (doc.Exists)
+        {
+            return doc.ToDictionary();
+        }
+
+        return null;
+    }
+    public async Task<Dictionary<string,string>> GetRouteIDToMission(string teamID)
+    {
+        Firebase.Firestore.Query query = Firestore.Collection("routes").WhereArrayContains("teamIds", teamID);
+
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        if(snapshot.Count > 0)
+        {
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                Dictionary<string, object> zoneRaw = doc.GetValue<Dictionary<string, object>>("zones");
+
+                Dictionary<string, string> resultDic = new();
+
+                foreach(var kvp in zoneRaw)
+                {
+                    if(kvp.Value is List<object> list && list.Count > 0)
+                    {
+                        resultDic[kvp.Key] = list[0].ToString();
+                        Debug.Log($"딕셔너리 -> {kvp.Key}에 {list[0].ToString()}를 저장");
+                    }
+                }
+
+                return resultDic;
+            }
+        }
+
+        Debug.LogError($"{teamID} 에 맞는 루트 zones 데이터가 없습니다. ");
+
+        return null;
+    }
+
+
+
     #region 팀 ID를 통해 routes 컬렉션 데이터 가져오기
     public async Task<(string[] zoneOrder, string[] zoneOrderNames)> GetTeamIDToRoutes(string teamID)
     {

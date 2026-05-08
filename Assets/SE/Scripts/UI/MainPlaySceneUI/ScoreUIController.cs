@@ -74,6 +74,12 @@ public class ScoreUIController : MonoBehaviour
 
         yield return new WaitUntil(() => task.IsCompleted);
 
+        if (task.IsFaulted || task.IsCanceled)
+        {
+            Debug.LogWarning("점수 불러오기 실패");
+            yield break;
+        }
+
         int currentScore = 0;
         int.TryParse(task.Result, out currentScore);
 
