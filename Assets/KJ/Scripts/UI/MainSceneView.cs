@@ -78,6 +78,8 @@ public class MainSceneView : MonoBehaviour
         {
             if(a.Key == routeID)
             {
+                Debug.Log($"키 : {a.Key} , 값 : {a.Value}");
+
                 OnMissionUIView(a.Key, a.Value); //a.Key = 루트 ID , a.Value = 미션 ID
             }
         }
