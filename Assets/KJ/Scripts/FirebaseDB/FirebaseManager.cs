@@ -73,7 +73,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
 
         return null;
     }
-    public async Task<Dictionary<string,string>> GetRouteIDToMission(string teamID)
+    public async Task<Dictionary<string, List<string>>> GetRouteIDToMission(string teamID)
     {
         Firebase.Firestore.Query query = Firestore.Collection("routes").WhereArrayContains("teamIds", teamID);
 
@@ -85,13 +85,16 @@ public class FirebaseManager : MonoBehaviour, IDisposable
             {
                 Dictionary<string, object> zoneRaw = doc.GetValue<Dictionary<string, object>>("zones");
 
-                Dictionary<string, string> resultDic = new();
+                //Dictionary<string, string> resultDic = new();
+                Dictionary<string, List<string>> resultDic = new();
 
                 foreach(var kvp in zoneRaw)
                 {
                     if(kvp.Value is List<object> list && list.Count > 0)
                     {
-                        resultDic[kvp.Key] = list[0].ToString();
+                        //resultDic[kvp.Key] = list[0].ToString(); //리스트에 첫번쨰 요소만 가져오는게 아님
+                        resultDic[kvp.Key] = list.Select(o => o.ToString()).ToList();
+
                         Debug.Log($"딕셔너리 -> {kvp.Key}에 {list[0].ToString()}를 저장");
                     }
                 }
@@ -302,12 +305,22 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     /// <summary>
     /// 팀 상태 감지 해제 ( 팀 구성 완료 시, 다른 화면으로 전환 후 더 감지 불필요 )
     /// </summary>
-    public void UnListenTeamStatus()
+    public async Task UnListenTeamStatus()
     {
-        teamRef.ValueChanged -= handler;
-
-        teamRef = null;
-        handler = null;
+        try
+        {
+            if (teamRef != null)
+            {
+                teamRef.ValueChanged -= handler;
+                await teamRef.SetValueAsync("waiting");
+                teamRef = null;
+            }
+            handler = null;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"UnListenTeamStatus 오류: {e.Message}");
+        }
     }
     #endregion
 }

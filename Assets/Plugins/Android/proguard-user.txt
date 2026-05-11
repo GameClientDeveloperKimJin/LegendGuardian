@@ -1,0 +1,8 @@
+# Firebase Firestore 26.1.1 - datastore-preferences classes must not be stripped by R8
+-keep class androidx.datastore.** { *; }
+-keepnames class androidx.datastore.** { *; }
+-keep class kotlin.coroutines.** { *; }
+
+# Firebase heartbeat storage
+-keep class com.google.firebase.datastorage.** { *; }
+-keep class com.google.firebase.heartbeatinfo.** { *; }

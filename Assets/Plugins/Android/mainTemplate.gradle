@@ -22,6 +22,23 @@ dependencies {
 // Android Resolver Dependencies End
 **DEPS**}
 
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'androidx.datastore') {
+            String n = details.requested.name
+            if (n == 'datastore-preferences' || n == 'datastore-preferences-jvm' || n == 'datastore-preferences-android') {
+                details.useTarget('androidx.datastore:datastore-preferences:1.0.0')
+            } else if (n == 'datastore-preferences-core' || n == 'datastore-preferences-core-jvm' || n == 'datastore-preferences-core-android') {
+                details.useTarget('androidx.datastore:datastore-preferences-core:1.0.0')
+            } else if (n == 'datastore-core' || n == 'datastore-core-jvm' || n == 'datastore-core-android') {
+                details.useTarget('androidx.datastore:datastore-core:1.0.0')
+            } else if (n == 'datastore' || n == 'datastore-jvm' || n == 'datastore-android') {
+                details.useTarget('androidx.datastore:datastore:1.0.0')
+            }
+        }
+    }
+}
+
 // Android Resolver Exclusions Start
 android {
   packaging {
@@ -56,7 +73,7 @@ android {
         }
         versionCode **VERSIONCODE**
         versionName '**VERSIONNAME**'
-        consumerProguardFiles 'proguard-unity.txt'**USER_PROGUARD**
+        consumerProguardFiles 'proguard-unity.txt', 'proguard-user.txt'**USER_PROGUARD**
 **DEFAULT_CONFIG_SETUP**
     }
 
@@ -69,6 +86,13 @@ android {
         ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
     }**PACKAGING**
 }
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += ['-Xskip-metadata-version-check']
+        jvmTarget = '17'
+    }
+}
+
 **IL_CPP_BUILD_SETUP**
 **SOURCE_BUILD_SETUP**
 **EXTERNAL_SOURCES**

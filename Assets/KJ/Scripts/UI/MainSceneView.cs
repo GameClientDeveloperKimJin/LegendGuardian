@@ -13,6 +13,14 @@ public enum MissionMapType
     floor3,
 }
 
+public class MissionData
+{
+    public string MissionName;
+    public string MissionID;
+    public string MissionDetail;
+    public string MissionReward;
+    public bool IsMissionClear;
+}
 public class MainSceneView : MonoBehaviour 
 {
     [SerializeField]
@@ -63,6 +71,7 @@ public class MainSceneView : MonoBehaviour
 
     }
 
+    private Dictionary<string, MissionData> missionDic = new();
     /// <summary>
     /// 루트 버튼 클릭 시, 콜백
     /// </summary>
@@ -70,18 +79,22 @@ public class MainSceneView : MonoBehaviour
     /// <param name="routeID"></param>
     private async void OnMissionButtonClicked(string teamID, string routeID)
     {
-        var dic = await FirebaseManager.Instance.GetRouteIDToMission(teamID);
+        Dictionary<string,List<string>> dic = await FirebaseManager.Instance.GetRouteIDToMission(teamID);
 
         Debug.Log(dic != null);
 
         foreach(var a in dic)
         {
-            if(a.Key == routeID)
+            if(routeID == a.Key)
             {
-                Debug.Log($"키 : {a.Key} , 값 : {a.Value}");
+                foreach (string missionID in a.Value)
+                {
+                    Debug.Log($"키 : {a.Key} , 값 : {a.Value}");
 
-                OnMissionUIView(a.Key, a.Value); //a.Key = 루트 ID , a.Value = 미션 ID
+                    OnMissionUIView(a.Key, a.Value); //a.Key = 루트 ID (outdoor, 1f,2f,3f ) , a.Value = 루트에 맞는 미션 리스트 
+                }
             }
+            
         }
 
     }
@@ -111,27 +124,80 @@ public class MainSceneView : MonoBehaviour
     /// 미션 UI 활성화
     /// </summary>
     /// <param name="routeID"></param>
-    private async void OnMissionUIView(string routeID,string missionID)
+    private async void OnMissionUIView(string routeID,List<string> missionList)
     {
         missionImage.gameObject.SetActive(true);
 
-        if(routeID == MissionMapType.outdoor.ToString())
+        if (routeID == MissionMapType.outdoor.ToString())
         {
             titleMapTMP.text = $"현재 위치 야외 발전소";
             mapImage.sprite = outdoorMap;
         }
+        if (routeID == MissionMapType.floor1.ToString())
+        {
+            titleMapTMP.text = $"현재 위치 1층";
+            mapImage.sprite = floorMap_1;
+        }
 
-        Dictionary<string,object> missionDic =  await FirebaseManager.Instance.GetMissionAllData(missionID);
+        // 1. 모든 미션 먼저 딕셔너리에 추가                                                                                                                                                                             
+        missionTestList = new List<string>(missionList);
 
-        missionTitleTMP.text = $"{missionDic["name"].ToString()}"; //미션 이름
+        foreach (string missionID in missionList)
+        {
+            if (string.IsNullOrEmpty(missionID)) continue;
 
-        if (missionDic.TryGetValue("detail", out var detail))
-            missionDetailTMP.text = detail.ToString();
+            if (!missionDic.ContainsKey(missionID))
+            {
+                Dictionary<string, object> missionAllDic = await FirebaseManager.Instance.GetMissionAllData(missionID);
 
-        rewardTMP.text = $"보상: {missionDic["reward"].ToString()}wh"; //미션 보상 
+                missionDic[missionID] = new MissionData()
+                {
+                    MissionName = missionAllDic.TryGetValue("name", out var name) ? name.ToString() : "",
+                    MissionDetail = missionAllDic.TryGetValue("detail", out var detail) ? detail.ToString() : "",
+                    MissionReward = missionAllDic.TryGetValue("reward", out var reward) ? reward.ToString() : "",
+                    MissionID = missionID,
+                    IsMissionClear = false,
+                };
 
+                Debug.Log($"미션 추가 - 이름: {missionDic[missionID].MissionName}, 완료 여부: {missionDic[missionID].IsMissionClear}");
+            }
+        }
+
+        // 2. 첫 번째 미클리어 미션만 표시
+        foreach (string missionID in missionList)
+        {
+            if (string.IsNullOrEmpty(missionID)) continue;
+
+            if (!missionDic[missionID].IsMissionClear)
+            {
+                missionTitleTMP.text = missionDic[missionID].MissionName;
+                missionDetailTMP.text = missionDic[missionID].MissionDetail;
+                rewardTMP.text = $"보상 : {missionDic[missionID].MissionReward} wh";
+                return;
+            }
+        }
     }
 
+    List<string> missionTestList = new List<string>();
+
+    private void OnGUI()
+    {
+        if (GUILayout.Button("첫번째 미션 강제 완료 시키기"))
+        {
+            if (missionTestList.Count > 0 && missionDic.ContainsKey(missionTestList[0]))
+                missionDic[missionTestList[0]].IsMissionClear = true;
+        }
+        if (GUILayout.Button("두번째 미션 강제 완료 시키기"))
+        {
+            if (missionTestList.Count > 1 && missionDic.ContainsKey(missionTestList[1]))
+                missionDic[missionTestList[1]].IsMissionClear = true;
+        }
+        if (GUILayout.Button("세번째 미션 강제 완료 시키기"))
+        {
+            if (missionTestList.Count > 2 && missionDic.ContainsKey(missionTestList[2]))
+                missionDic[missionTestList[2]].IsMissionClear = true;
+        }
+    }
 
 
     /// <summary>
