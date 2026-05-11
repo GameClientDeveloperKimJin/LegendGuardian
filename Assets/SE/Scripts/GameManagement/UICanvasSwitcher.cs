@@ -11,7 +11,10 @@ public class UICanvasSwitcher : MonoBehaviour
     public void SwitchCanvas()
     {
         // 씬 안의 모든 Canvas 찾기
-        Canvas[] allCanvases = FindObjectsOfType<Canvas>(true);
+        Canvas[] allCanvases = FindObjectsByType<Canvas>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
 
         // 전부 끄기
         foreach (Canvas canvas in allCanvases)
