@@ -29,12 +29,6 @@ public class MissionData
 public class MainSceneView : MonoBehaviour 
 {
     [SerializeField]
-    TextMeshProUGUI nickNameTMP;
-
-    [SerializeField]
-    TextMeshProUGUI scoreTMP;
-
-    [SerializeField]
     Button routeButtonPrefab; //생성할 버튼 프리펩
 
     [SerializeField]

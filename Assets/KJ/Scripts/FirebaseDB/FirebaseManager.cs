@@ -189,6 +189,40 @@ public class FirebaseManager : MonoBehaviour, IDisposable
 
         return null;
     }
+
+    /// <summary>
+    /// 상위 랭킹 10위 이내 조회
+    /// </summary>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    public async Task<List<RankingData>> GetRanking(int limit = 10)
+    {
+        QuerySnapshot snapShot = await Firestore.Collection("users").OrderByDescending("score").Limit(limit).GetSnapshotAsync();
+
+        var scoreList = new List<RankingData>();
+
+        string teacher = "teacher";
+
+        foreach(DocumentSnapshot doc in snapShot.Documents)
+        {
+            if(doc.TryGetValue("role",out string type) && type == teacher) //선생님 제외
+            {
+                continue;
+            }
+
+            long scoreValue = 0;
+            if (doc.TryGetValue("score", out object obj))
+                scoreValue = Convert.ToInt64(obj); // string이든 int64든 자동 변환
+
+            scoreList.Add(new RankingData()
+            {
+                NickName = doc.TryGetValue("nickname", out string userName) ? userName : "닉네임 없음",
+                score = scoreValue,
+            });
+
+        }
+        return scoreList;
+    }
     /// <summary>
     /// 유저 ID로 유저 DB에 저장된 닉네임을 가져옵니다
     /// </summary>
