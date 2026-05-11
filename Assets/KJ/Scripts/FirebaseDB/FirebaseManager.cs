@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using Query = Firebase.Firestore.Query;
 
 public class FirebaseManager : MonoBehaviour, IDisposable
 {

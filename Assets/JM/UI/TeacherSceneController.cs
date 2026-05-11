@@ -5,12 +5,14 @@ using TMPro;
 
 public class TeacherSceneController : MonoBehaviour
 {
-    [Header("Canvases")]
+    [Header("Canvas References")]
+    [SerializeField] private GameObject canvasMain;
     [SerializeField] private GameObject canvasStudent;
-    [SerializeField] private GameObject canvasStudentInfo;
     [SerializeField] private GameObject canvasApprovalWaiting;
     [SerializeField] private GameObject canvasCheckApproval;
-    [SerializeField] private GameObject canvasSettings;
+
+    [Header("Student Info Panel (Canvas_Student 내부 Cnavas_StudentInfo)")]
+    [SerializeField] private GameObject studentInfoPanel;
 
     [Header("Student List")]
     [SerializeField] private Transform studentListParent; // Grp_Middle
@@ -18,33 +20,51 @@ public class TeacherSceneController : MonoBehaviour
 
     [Header("Student Info")]
     [SerializeField] private TextMeshProUGUI txtInfoName;
-    [SerializeField] private TextMeshProUGUI txtInfoScore;
     [SerializeField] private TextMeshProUGUI txtInfoTeam;
-    [SerializeField] private TextMeshProUGUI txtInfoEmail;
     [SerializeField] private Image imgStudent;
 
+    [Header("Approval Floor Filter (Grp_High)")]
+    [SerializeField] private Button btnFloorAll;    // Btn_All (전체)
+    [SerializeField] private Button btnFloor1;      // Btn_Floor1 (야외)
+    [SerializeField] private Button btnFloor2;      // Btn_Floor2 (1층)
+    [SerializeField] private Button btnFloor3;      // Btn_Floor3 (2층)
+    [SerializeField] private Button btnFloor4;      // Btn_Floor4 (3층)
+
     [Header("Approval List")]
-    [SerializeField] private Transform approvalListParent; // ScrollView content
+    [SerializeField] private Transform approvalListParent;
     [SerializeField] private GameObject approvalListItemPrefab;
 
     [Header("Check Approval Detail")]
     [SerializeField] private TextMeshProUGUI txtMissionInfo;
     [SerializeField] private Image imgMissionData;
-    [SerializeField] private Button btnApproveDetail;
-    [SerializeField] private Button btnRejectDetail;
+    [SerializeField] private Button btnApprove;   // Btn_Wh (승인)
+    [SerializeField] private Button btnReject;    // Btn_Delete (거절)
 
     private Dictionary<string, object> selectedApproval;
     private Dictionary<string, object> selectedStudent;
+    private List<Dictionary<string, object>> cachedApprovals = new();
+    private string currentFloorFilter = "all"; // "all", "floor1"~"floor4"
 
     private void Start()
     {
         LoadStudents();
         LoadPendingApprovals();
 
-        if (btnApproveDetail != null)
-            btnApproveDetail.onClick.AddListener(OnApproveClicked);
-        if (btnRejectDetail != null)
-            btnRejectDetail.onClick.AddListener(OnRejectClicked);
+        if (btnApprove != null)
+            btnApprove.onClick.AddListener(OnApproveClicked);
+        if (btnReject != null)
+            btnReject.onClick.AddListener(OnRejectClicked);
+
+        // 층 필터 버튼
+        if (btnFloorAll != null) btnFloorAll.onClick.AddListener(() => FilterByFloor("all"));
+        if (btnFloor1 != null) btnFloor1.onClick.AddListener(() => FilterByFloor("floor1"));
+        if (btnFloor2 != null) btnFloor2.onClick.AddListener(() => FilterByFloor("floor2"));
+        if (btnFloor3 != null) btnFloor3.onClick.AddListener(() => FilterByFloor("floor3"));
+        if (btnFloor4 != null) btnFloor4.onClick.AddListener(() => FilterByFloor("floor4"));
+
+        // 학생 상세 패널 초기 비활성화
+        if (studentInfoPanel != null)
+            studentInfoPanel.SetActive(false);
     }
 
     #region Student List
@@ -53,7 +73,6 @@ public class TeacherSceneController : MonoBehaviour
     {
         if (!FirebaseManager.Instance.IsConnect) return;
 
-        // 기존 항목 제거
         foreach (Transform child in studentListParent)
             Destroy(child.gameObject);
 
@@ -73,14 +92,18 @@ public class TeacherSceneController : MonoBehaviour
 
         if (txtInfoName != null)
             txtInfoName.text = studentData.ContainsKey("nickname") ? studentData["nickname"].ToString() : "";
-        if (txtInfoScore != null)
-            txtInfoScore.text = studentData.ContainsKey("score") ? studentData["score"].ToString() : "0";
         if (txtInfoTeam != null)
             txtInfoTeam.text = studentData.ContainsKey("teamId") ? studentData["teamId"].ToString() : "";
-        if (txtInfoEmail != null)
-            txtInfoEmail.text = studentData.ContainsKey("email") ? studentData["email"].ToString() : "";
 
-        ShowCanvas(canvasStudentInfo);
+        // Canvas_Student 내부의 Cnavas_StudentInfo 패널을 활성화
+        if (studentInfoPanel != null)
+            studentInfoPanel.SetActive(true);
+    }
+
+    public void HideStudentInfo()
+    {
+        if (studentInfoPanel != null)
+            studentInfoPanel.SetActive(false);
     }
 
     #endregion
@@ -91,16 +114,33 @@ public class TeacherSceneController : MonoBehaviour
     {
         if (!FirebaseManager.Instance.IsConnect) return;
 
+        cachedApprovals = await FirebaseManager.Instance.GetPendingApprovals();
+        DisplayApprovals();
+    }
+
+    private void FilterByFloor(string floor)
+    {
+        currentFloorFilter = floor;
+        DisplayApprovals();
+    }
+
+    private void DisplayApprovals()
+    {
         foreach (Transform child in approvalListParent)
             Destroy(child.gameObject);
 
-        var approvals = await FirebaseManager.Instance.GetPendingApprovals();
+        Debug.Log($"DisplayApprovals: {cachedApprovals.Count}개 승인 데이터");
 
-        foreach (var approval in approvals)
+        foreach (var approval in cachedApprovals)
         {
             var item = Instantiate(approvalListItemPrefab, approvalListParent);
             var listItem = item.GetComponent<ApprovalListItem>();
-            listItem.Setup(approval, OnApproveFromList, OnRejectFromList, ShowApprovalDetail);
+            if (listItem == null)
+            {
+                Debug.LogError("프리팹에 ApprovalListItem 컴포넌트가 없습니다!");
+                continue;
+            }
+            listItem.Setup(approval, ShowApprovalDetail);
         }
     }
 
@@ -116,24 +156,7 @@ public class TeacherSceneController : MonoBehaviour
             txtMissionInfo.text = $"학생: {studentName}\n미션: {missionName}\n보상: {reward}";
         }
 
-        ShowCanvas(canvasCheckApproval);
-    }
-
-    private async void OnApproveFromList(Dictionary<string, object> data)
-    {
-        string docId = data["docId"].ToString();
-        string email = data.ContainsKey("studentEmail") ? data["studentEmail"].ToString() : "";
-        long reward = data.ContainsKey("reward") ? (long)data["reward"] : 0;
-
-        await FirebaseManager.Instance.ApproveRequest(docId, email, reward);
-        LoadPendingApprovals();
-    }
-
-    private async void OnRejectFromList(Dictionary<string, object> data)
-    {
-        string docId = data["docId"].ToString();
-        await FirebaseManager.Instance.RejectRequest(docId);
-        LoadPendingApprovals();
+        ShowCheckApproval();
     }
 
     public async void OnApproveClicked()
@@ -146,8 +169,7 @@ public class TeacherSceneController : MonoBehaviour
 
         await FirebaseManager.Instance.ApproveRequest(docId, email, reward);
         selectedApproval = null;
-        ShowCanvas(canvasApprovalWaiting);
-        LoadPendingApprovals();
+        BackToApprovalList();
     }
 
     public async void OnRejectClicked()
@@ -157,37 +179,60 @@ public class TeacherSceneController : MonoBehaviour
         string docId = selectedApproval["docId"].ToString();
         await FirebaseManager.Instance.RejectRequest(docId);
         selectedApproval = null;
-        ShowCanvas(canvasApprovalWaiting);
-        LoadPendingApprovals();
+        BackToApprovalList();
     }
 
     #endregion
 
     #region Canvas Navigation
 
-    public void ShowCanvas(GameObject target)
+    private void ShowOnly(GameObject target)
     {
+        // TeacherCanvas_Main은 항상 Active 유지
+        canvasMain.SetActive(true);
         canvasStudent.SetActive(target == canvasStudent);
-        canvasStudentInfo.SetActive(target == canvasStudentInfo);
         canvasApprovalWaiting.SetActive(target == canvasApprovalWaiting);
         canvasCheckApproval.SetActive(target == canvasCheckApproval);
-        canvasSettings.SetActive(target == canvasSettings);
+
+        if (studentInfoPanel != null)
+            studentInfoPanel.SetActive(false);
     }
 
-    // 버튼에서 호출할 수 있는 퍼블릭 메서드들
-    public void ShowStudentCanvas() => ShowCanvas(canvasStudent);
-    public void ShowApprovalCanvas()
+    // Canvas_Main 버튼용
+    public void GoToStudentCanvas()
     {
-        ShowCanvas(canvasApprovalWaiting);
+        ShowOnly(canvasStudent);
+        LoadStudents();
+    }
+
+    public void GoToApprovalCanvas()
+    {
+        ShowOnly(canvasApprovalWaiting);
         LoadPendingApprovals();
     }
-    public void ShowSettingsCanvas() => ShowCanvas(canvasSettings);
 
-    public void BackToStudentList() => ShowCanvas(canvasStudent);
+    public void BackToMain()
+    {
+        ShowOnly(canvasMain);
+    }
+
+    // 승인 상세 전환
+    public void ShowCheckApproval()
+    {
+        Debug.Log($"ShowCheckApproval 호출됨 - canvasCheckApproval: {canvasCheckApproval}, null?: {canvasCheckApproval == null}");
+        ShowOnly(canvasCheckApproval);
+        Debug.Log($"Canvas_CheckApproval active: {canvasCheckApproval.activeSelf}");
+    }
+
     public void BackToApprovalList()
     {
-        ShowCanvas(canvasApprovalWaiting);
+        ShowOnly(canvasApprovalWaiting);
         LoadPendingApprovals();
+    }
+
+    public void BackToStudentList()
+    {
+        HideStudentInfo();
     }
 
     #endregion
