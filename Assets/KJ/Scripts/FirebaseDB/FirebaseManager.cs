@@ -262,6 +262,98 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         Debug.LogError($"{userID} 에 맞는 팀 ID가 없습니다. ");
         return null;
     }
+    /// <summary>
+    /// role이 "student"인 모든 유저를 가져옵니다
+    /// </summary>
+    public async Task<List<Dictionary<string, object>>> GetAllStudents()
+    {
+        Query query = Firestore.Collection("users").WhereEqualTo("role", "student");
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        List<Dictionary<string, object>> students = new();
+        foreach (DocumentSnapshot doc in snapshot.Documents)
+        {
+            var data = doc.ToDictionary();
+            data["docId"] = doc.Id;
+            students.Add(data);
+        }
+        return students;
+    }
+
+    /// <summary>
+    /// status가 "pending"인 승인 요청을 모두 가져옵니다
+    /// </summary>
+    public async Task<List<Dictionary<string, object>>> GetPendingApprovals()
+    {
+        Query query = Firestore.Collection("approvals").WhereEqualTo("status", "pending");
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        List<Dictionary<string, object>> approvals = new();
+        foreach (DocumentSnapshot doc in snapshot.Documents)
+        {
+            var data = doc.ToDictionary();
+            data["docId"] = doc.Id;
+            approvals.Add(data);
+        }
+        return approvals;
+    }
+
+    /// <summary>
+    /// 승인 요청을 승인 처리하고 학생에게 점수를 부여합니다
+    /// </summary>
+    public async Task ApproveRequest(string docId, string studentEmail, long reward)
+    {
+        DocumentReference docRef = Firestore.Collection("approvals").Document(docId);
+        await docRef.UpdateAsync(new Dictionary<string, object>
+        {
+            { "status", "approved" },
+            { "reviewedAt", FieldValue.ServerTimestamp },
+            { "reviewedBy", AuthManager.Instance.LoginUserID ?? "teacher" }
+        });
+
+        await UpdateUserScore(studentEmail, reward);
+        Debug.Log($"승인 완료: {docId}, 보상: {reward}");
+    }
+
+    /// <summary>
+    /// 승인 요청을 거절 처리합니다
+    /// </summary>
+    public async Task RejectRequest(string docId)
+    {
+        DocumentReference docRef = Firestore.Collection("approvals").Document(docId);
+        await docRef.UpdateAsync(new Dictionary<string, object>
+        {
+            { "status", "rejected" },
+            { "reviewedAt", FieldValue.ServerTimestamp },
+            { "reviewedBy", AuthManager.Instance.LoginUserID ?? "teacher" }
+        });
+        Debug.Log($"거절 완료: {docId}");
+    }
+
+    /// <summary>
+    /// 학생이 미션 완료 시 승인 요청을 생성합니다
+    /// </summary>
+    public async Task SubmitMissionApproval(string studentEmail, string studentNickname,
+        string missionId, string missionName, string teamId, long reward)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "studentId", Auth.CurrentUser?.UserId ?? "" },
+            { "studentEmail", studentEmail },
+            { "studentNickname", studentNickname },
+            { "missionId", missionId },
+            { "missionName", missionName },
+            { "teamId", teamId },
+            { "status", "pending" },
+            { "submittedAt", FieldValue.ServerTimestamp },
+            { "reviewedAt", null },
+            { "reviewedBy", null },
+            { "reward", reward }
+        };
+
+        await Firestore.Collection("approvals").AddAsync(data);
+        Debug.Log($"승인 요청 생성: {missionName} by {studentNickname}");
+    }
     #endregion
 
     #region 팀 상태
