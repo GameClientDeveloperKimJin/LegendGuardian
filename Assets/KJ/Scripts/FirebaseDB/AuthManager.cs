@@ -227,7 +227,7 @@ public class AuthManager : MonoBehaviour
         //data["userid"] = user.Email; //아이디 저장
         data["email"] = user.Email; //아이디(이메일) 저장
         data["nickname"] = nickname; //닉네임 저장
-        data["score"] = 0; //개인 wh 저장
+        data["score"] = 0L; //개인 wh 저장, 0L : long(int 64)
         data["role"] = "student";
 
         await docRef.SetAsync(data);
