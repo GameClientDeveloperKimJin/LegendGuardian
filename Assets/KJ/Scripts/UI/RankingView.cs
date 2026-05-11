@@ -23,7 +23,7 @@ public class RankingView : MonoBehaviour
     {
         var rankList = await FirebaseManager.Instance?.GetRanking();
 
-        Debug.Log(rankList != null);
+        if (rankList == null) return;
 
         int rank = 0;
         foreach (var rankingData in rankList)
@@ -34,6 +34,14 @@ public class RankingView : MonoBehaviour
             rankItem.GetComponent<RankItem>().Init(rank.ToString(), rankingData.NickName, rankingData.score.ToString());
 
             Debug.Log($"{rankingData.NickName} , {rankingData.score.ToString()}");
+        }
+    }
+
+    private void OnDisable()
+    {
+        foreach(Transform rankitem in RankContent)
+        {
+            Destroy(rankitem.gameObject);
         }
     }
 }
