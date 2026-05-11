@@ -64,14 +64,17 @@ public class AuthManager : MonoBehaviour
     /// <param name="userID"></param>
     public async void SaveLoginUser(string userID)
     {
-        this.LoginUserID = userID + "@giadian.com";
-
-        this.LoginUserName = await FirebaseManager.Instance.GetUserIDToNickName(LoginUserID);
-
-        UserData userData = new UserData(LoginUserID, LoginUserName);
-        userDictionary[userID] = userData;
-
-       
+        try
+        {
+            this.LoginUserID = userID + "@giadian.com";
+            this.LoginUserName = await FirebaseManager.Instance.GetUserIDToNickName(LoginUserID);
+            UserData userData = new UserData(LoginUserID, LoginUserName);
+            userDictionary[userID] = userData;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"SaveLoginUser 오류: {e.Message}");
+        }
     }
 
 
@@ -194,12 +197,16 @@ public class AuthManager : MonoBehaviour
     /// </summary>
     public void SignOut()
     {
-        //Auth에 저장된 계정 초기화
-        FirebaseManager.Instance.Auth.SignOut();
-
-        RemoveTeamListener();
-
-        Debug.Log("로그아웃 완료");
+        try
+        {
+            FirebaseManager.Instance?.Auth?.SignOut();
+            RemoveTeamListener();
+            Debug.Log("로그아웃 완료");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"SignOut 오류: {e.Message}");
+        }
     }
 
     #endregion

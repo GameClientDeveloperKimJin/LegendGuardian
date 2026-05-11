@@ -76,7 +76,7 @@ public class ScoreUIController : MonoBehaviour
 
         if (task.IsFaulted || task.IsCanceled)
         {
-            Debug.LogWarning("Á¡¼ö ºÒ·¯¿À±â ½ÇÆÐ");
+            Debug.LogWarning("ï¿½ï¿½ï¿½ï¿½ ï¿½Ò·ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½");
             yield break;
         }
 
@@ -122,6 +122,8 @@ public class ScoreUIController : MonoBehaviour
 
         string teamName = await AuthManager.Instance.GetUserTeamName();
 
+        if (string.IsNullOrEmpty(teamName)) return;
+
         int index = Mathf.Abs(teamName.GetHashCode()) % elementDataList.Length;
         currentElementData = elementDataList[index];
 
@@ -152,22 +154,22 @@ public class ScoreUIController : MonoBehaviour
 
         if (maxScore <= 0)
         {
-            SetEmon(currentElementData.eggSprite, "¾Ë");
+            SetEmon(currentElementData.eggSprite, "ï¿½ï¿½");
             return;
         }
 
         float step = maxScore / 4f;
 
         if (score >= maxScore)
-            SetEmon(currentElementData.finalSprite, "ÃÖÁ¾");
+            SetEmon(currentElementData.finalSprite, "ï¿½ï¿½ï¿½ï¿½");
         else if (score >= step * 3f)
-            SetEmon(currentElementData.adultSprite, "¼ºÃ¼");
+            SetEmon(currentElementData.adultSprite, "ï¿½ï¿½Ã¼");
         else if (score >= step * 2f)
-            SetEmon(currentElementData.growthSprite, "¼ºÀå±â");
+            SetEmon(currentElementData.growthSprite, "ï¿½ï¿½ï¿½ï¿½ï¿½");
         else if (score >= step)
-            SetEmon(currentElementData.hatchSprite, "ºÎÈ­");
+            SetEmon(currentElementData.hatchSprite, "ï¿½ï¿½È­");
         else
-            SetEmon(currentElementData.eggSprite, "¾Ë");
+            SetEmon(currentElementData.eggSprite, "ï¿½ï¿½");
     }
 
     private void SetEmon(Sprite sprite, string state)
