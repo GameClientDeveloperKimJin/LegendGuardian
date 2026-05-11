@@ -242,26 +242,40 @@ public class MainSceneView : MonoBehaviour
             }
         }
 
-        if (allClear)
+        if (!allClear)
         {
-            MissionMapClearType currentType = MissionClearType;
-            MissionMapClearType nextType = (MissionMapClearType)currentType + 1;
+            return;
+        }
 
-            if (Enum.IsDefined(typeof(MissionMapClearType), nextType)) //MissionMapClearType 안에 nextType 값이 존재하면 true
+        MissionMapClearType currentType = MissionClearType;
+        MissionMapClearType nextType = (MissionMapClearType)currentType + 1;
+
+        if (Enum.IsDefined(typeof(MissionMapClearType), nextType)) //MissionMapClearType 안에 nextType 값이 존재하면 true
+        {
+            currentType = (MissionMapClearType)nextType;
+            MissionClearType = currentType;
+
+            switch (MissionClearType)
             {
-                currentType = (MissionMapClearType)nextType;
-                MissionClearType = currentType;
-
-                switch (MissionClearType)
-                {
-                    case MissionMapClearType.Clear1:
-                        OnSecondRouteButtonActive();
-                        break;
-                    case MissionMapClearType.Clear2:
-                        OnThirdRouteButtonActive();
-                        break;
-                }
+                case MissionMapClearType.Clear1:
+                    OnSecondRouteButtonActive();
+                    break;
+                case MissionMapClearType.Clear2:
+                    OnThirdRouteButtonActive();
+                    break;
             }
+        }
+
+        switch (currentRouteID)
+        {
+            case nameof(MissionMapType.outdoor):
+                break;
+            case nameof(MissionMapType.floor1):
+                break;
+            case nameof(MissionMapType.floor2):
+                break;
+            case nameof(MissionMapType.floor3):
+                break;
         }
     }
 
@@ -273,6 +287,8 @@ public class MainSceneView : MonoBehaviour
             {
                 missionDic[missions[0]].IsMissionClear = true;
                 AllMissionClear();
+
+                
             }
 
         }
