@@ -57,6 +57,9 @@ public class AuthManager : MonoBehaviour
 
     public Dictionary<string, UserData> userDictionary = new();
 
+    public string LoginUserRole { get; private set; } = "student";
+    public bool IsUserLoaded { get; private set; } = false;
+
 
     /// <summary>
     /// 유저가 로그인 했을 때, 로그인 한 유저 데이터 저장
@@ -68,12 +71,18 @@ public class AuthManager : MonoBehaviour
         {
             this.LoginUserID = userID + "@giadian.com";
             this.LoginUserName = await FirebaseManager.Instance.GetUserIDToNickName(LoginUserID);
+
+
             UserData userData = new UserData(LoginUserID, LoginUserName);
             userDictionary[userID] = userData;
         }
         catch (Exception e)
         {
             Debug.LogError($"SaveLoginUser 오류: {e.Message}");
+        }
+        finally
+        {
+            IsUserLoaded = true;
         }
     }
 
@@ -121,7 +130,7 @@ public class AuthManager : MonoBehaviour
 
             AuthResult result = await FirebaseManager.Instance.Auth.CreateUserWithEmailAndPasswordAsync(email, password);
 
-            await SaveUserToFirestore(result.User,nickname);
+            await SaveUserToFirestore(result.User,nickname , email);
 
             return (true, null); // true : 성공 , null : 에러 없음
         }
@@ -218,17 +227,25 @@ public class AuthManager : MonoBehaviour
     /// <param name="user"></param>
     /// <param name="nickname"></param>
     /// <returns></returns>
-    private async Task SaveUserToFirestore(FirebaseUser user , string nickname)
+    private async Task SaveUserToFirestore(FirebaseUser user , string nickname , string email)
     {
         DocumentReference docRef = FirebaseManager.Instance.Firestore.Collection("users").Document(user.UserId);
 
         Dictionary<string, object> data = new Dictionary<string, object>();
 
         //data["userid"] = user.Email; //아이디 저장
-        data["email"] = user.Email; //아이디(이메일) 저장
+        data["email"] = user.Email; //아이디(이메일) 저장, UID를 저장 ( 이메일 저장 아님)
         data["nickname"] = nickname; //닉네임 저장
         data["score"] = 0L; //개인 wh 저장, 0L : long(int 64)
-        data["role"] = "student";
+
+        if(email.Contains("teacher"))
+        {
+            data["role"] = "teacher";
+        }
+        else
+        {
+            data["role"] = "student";
+        }
 
         await docRef.SetAsync(data);
         Debug.Log($"FireStore users/{user.UserId} 저장 완료");

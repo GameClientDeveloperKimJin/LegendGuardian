@@ -104,6 +104,11 @@ public class TitleSceneUIController : MonoBehaviour
        
         if(success)
         {
+            if(id.Contains("teacher"))
+            {
+                SceneManager.LoadScene("TeacherScene_KJ");
+                return;
+            }
             LoginInputField.text = "";
             PWInputField.text = "";
 

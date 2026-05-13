@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,6 +51,8 @@ public class QuizSceneManager : MonoBehaviour
     {
         ConnectButtons();
 
+        MainSceneView.OnQuizStarted += StartQuizByArea;
+
         // 시작 시 결과 이미지 숨김
         if (resultImage != null)
         {
@@ -61,6 +64,13 @@ public class QuizSceneManager : MonoBehaviour
         {
             hintText.text = "";
         }
+
+
+    }
+
+    private void OnDestroy()
+    {
+        MainSceneView.OnQuizStarted -= StartQuizByArea;
     }
 
     private void ConnectButtons()

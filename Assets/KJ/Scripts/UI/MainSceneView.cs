@@ -64,7 +64,11 @@ public class MainSceneView : MonoBehaviour
 
     private string currentRouteID;
 
+    private string currentMissionID;
+
     public MissionMapClearType MissionClearType { get; private set; } = MissionMapClearType.None; //초기값: 미 클리어 상태
+
+    public static Action<QuizArea> OnQuizStarted;
 
     private IEnumerator Start()
     {
@@ -100,7 +104,49 @@ public class MainSceneView : MonoBehaviour
             routeButtons[i].onClick.AddListener(() => OnMissionButtonClicked(routesID[captureIndex]) );
         }
 
+        teacherSendBtn.onClick.AddListener(OnTeacherSendBtn);
 
+    }
+
+    private async void OnTeacherSendBtn()
+    {
+        if (string.IsNullOrEmpty(currentMissionID)) return;
+
+        teacherSendBtn.interactable = false;
+
+        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
+        string teamId = await AuthManager.Instance.GetUserTeamName();
+
+        await FirebaseManager.Instance.SendMissionApprovalRequest(
+            studentPrefix,
+            AuthManager.Instance.LoginUserID,
+            AuthManager.Instance.LoginUserName,
+            teamId,
+            currentMissionID,
+            missionDic[currentMissionID].MissionName,
+            currentRouteID
+        );
+
+        FirebaseManager.Instance.ListenMyRequest(studentPrefix, OnRequestStatusChanged);
+    }
+
+    private async void OnRequestStatusChanged(string status)
+    {
+        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
+
+        FirebaseManager.Instance.StopListenMyRequest();
+
+        await FirebaseManager.Instance.DeleteMissionRequest(studentPrefix);
+
+        if (status == "approved")
+        {
+            if (missionDic.TryGetValue(currentMissionID, out MissionData mission))
+                mission.IsMissionClear = true;
+
+            AllMissionClear();
+        }
+
+        teacherSendBtn.interactable = true;
     }
 
     /// <summary>
@@ -191,6 +237,7 @@ public class MainSceneView : MonoBehaviour
     /// <param name="missionList"></param>
     private void OnMissionView(string routeID,List<string> missionList)
     {
+
         foreach (string missionID in missionList)
         {
             if (string.IsNullOrEmpty(missionID))
@@ -201,6 +248,8 @@ public class MainSceneView : MonoBehaviour
             {
                 continue;
             }
+
+            currentMissionID = missionID;
 
             missionImage.gameObject.SetActive(true);
 
@@ -224,7 +273,7 @@ public class MainSceneView : MonoBehaviour
     }
 
     /// <summary>
-    /// 루트에 속한 미션들을 모두 클리어 했을 때 로직
+    /// 루트에 속한 미션들을 모두 클리어 했을 때 로직 및 판별
     /// </summary>
     private void AllMissionClear()
     {
@@ -266,18 +315,32 @@ public class MainSceneView : MonoBehaviour
             }
         }
 
+        quizeCanvas.gameObject.SetActive(true);
+
         switch (currentRouteID)
         {
             case nameof(MissionMapType.outdoor):
+                OnQuizStarted?.Invoke(QuizArea.Outside);
                 break;
             case nameof(MissionMapType.floor1):
+                OnQuizStarted?.Invoke(QuizArea.Floor1);
                 break;
             case nameof(MissionMapType.floor2):
+                OnQuizStarted?.Invoke(QuizArea.Floor2);
                 break;
             case nameof(MissionMapType.floor3):
+                OnQuizStarted?.Invoke(QuizArea.Floor3);
                 break;
+
+        
         }
     }
+
+    [SerializeField]
+    Canvas quizeCanvas;
+
+    [SerializeField]
+    Button teacherSendBtn;
 
     private void OnGUI()
     {
@@ -381,4 +444,15 @@ public class MainSceneView : MonoBehaviour
         //4번째 루트 버튼 색상 변경 -> 기존 회색에서 흰색으로 변경 , 버튼 클릭 가능 
     }
 
+    private void OnDestroy()
+    {
+        teacherSendBtn.onClick.RemoveAllListeners();
+
+        for(int i = 0; i< routeButtons.Length; i++)
+        {
+            routeButtons[i].onClick.RemoveAllListeners();
+        }
+
+        FirebaseManager.Instance?.StopListenMyRequest();
+    }
 }

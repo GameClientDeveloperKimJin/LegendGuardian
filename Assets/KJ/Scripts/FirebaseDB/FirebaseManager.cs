@@ -334,7 +334,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
 
         teamRef.ValueChanged += handler; //1. status 값 변경 되면 위 handler 재호출 설정
         //_teamListeners[teamID] = teamRef;
-     }
+    }
 
     /// <summary>
     /// 팀 상태 감지 해제 ( 팀 구성 완료 시, 다른 화면으로 전환 후 더 감지 불필요 )
@@ -356,5 +356,168 @@ public class FirebaseManager : MonoBehaviour, IDisposable
             Debug.LogError($"UnListenTeamStatus 오류: {e.Message}");
         }
     }
+    #endregion
+
+    #region 미션 요청/수락
+    // ──────────────────────────────────────────
+    // 학생: 미션 완료 승인 요청 전송
+    // ──────────────────────────────────────────
+    public async Task SendMissionApprovalRequest(
+        string studentPrefix, string studentId, string studentName,
+        string teamId, string missionId, string missionName, string routeId)
+    {
+        DatabaseReference reqRef = RealtimeDB.Child("missionRequests").Child(studentPrefix);
+
+        await reqRef.SetValueAsync(new System.Collections.Generic.Dictionary<string, object>
+        {
+            ["studentId"] = studentId,
+            ["studentName"] = studentName,
+            ["teamId"] = teamId,
+            ["missionId"] = missionId,
+            ["missionName"] = missionName,
+            ["routeId"] = routeId,
+            ["status"] = "pending",
+        });
+    }
+
+    /// <summary>
+    /// 승인 요청 실시간 감지
+    /// </summary>
+    private DatabaseReference _missionRequestsRef;
+    private EventHandler<ValueChangedEventArgs> _pendingRequestsHandler;
+
+    public void ListenPendingRequests(Action<List<MissionRequestData>> onChanged)
+    {
+        _missionRequestsRef = RealtimeDB.Child("missionRequests");
+
+        _pendingRequestsHandler = (sender, args) =>
+        {
+            if (args.DatabaseError != null)
+            {
+                Debug.LogError($"미션 요청 감지 오류: {args.DatabaseError.Message}");
+                return;
+            }
+
+            List<MissionRequestData> requests = new();
+
+            if (args.Snapshot.Value == null)
+            {
+                onChanged?.Invoke(requests);
+                return;
+            }
+
+            foreach (Firebase.Database.DataSnapshot child in args.Snapshot.Children)
+            {
+                string status = child.Child("status").Value?.ToString();
+                if (status != "pending") continue;
+
+                requests.Add(new MissionRequestData
+                {
+                    StudentPrefix = child.Key,
+                    StudentID = child.Child("studentId").Value?.ToString() ?? "",
+                    StudentName = child.Child("studentName").Value?.ToString() ?? "",
+                    TeamID = child.Child("teamId").Value?.ToString() ?? "",
+                    MissionID = child.Child("missionId").Value?.ToString() ?? "",
+                    MissionName = child.Child("missionName").Value?.ToString() ?? "",
+                    RouteID = child.Child("routeId").Value?.ToString() ?? "",
+                    Status = status,
+                });
+            }
+
+            onChanged?.Invoke(requests);
+        };
+
+        _missionRequestsRef.ValueChanged += _pendingRequestsHandler;
+    }
+
+    public void StopListenPendingRequests()
+    {
+        if (_missionRequestsRef != null)
+        {
+            _missionRequestsRef.ValueChanged -= _pendingRequestsHandler;
+            _missionRequestsRef = null;
+        }
+        _pendingRequestsHandler = null;
+    }
+
+    // 선생님: 승인
+    public async Task ApproveRequest(string studentPrefix)
+    {
+        await RealtimeDB.Child("missionRequests").Child(studentPrefix)
+            .Child("status").SetValueAsync("approved");
+
+        //await DeleteMissionRequest(studentPrefix);
+    }
+
+    // 선생님: 거절
+    public async Task RejectRequest(string studentPrefix)
+    {
+        await RealtimeDB.Child("missionRequests").Child(studentPrefix)
+            .Child("status").SetValueAsync("rejected");
+
+        
+    }
+
+    // ──────────────────────────────────────────
+    // 학생: 자신의 요청 status 실시간 감지
+    // ──────────────────────────────────────────
+    private DatabaseReference _myRequestRef;
+    private EventHandler<ValueChangedEventArgs> _myRequestHandler;
+
+    public void ListenMyRequest(string studentPrefix, Action<string> onStatusChanged)
+    {
+        StopListenMyRequest();
+
+        _myRequestRef = RealtimeDB.Child("missionRequests").Child(studentPrefix).Child("status");
+
+        _myRequestHandler = (sender, args) =>
+        {
+            if (args.DatabaseError != null)
+            {
+                Debug.LogError($"요청 상태 감지 오류: {args.DatabaseError.Message}");
+                return;
+            }
+
+            string status = args.Snapshot.Value?.ToString();
+            if (!string.IsNullOrEmpty(status))
+                onStatusChanged?.Invoke(status);
+        };
+
+        _myRequestRef.ValueChanged += _myRequestHandler;
+    }
+
+    public void StopListenMyRequest()
+    {
+        if (_myRequestRef != null)
+        {
+            _myRequestRef.ValueChanged -= _myRequestHandler;
+            _myRequestRef = null;
+        }
+        _myRequestHandler = null;
+    }
+
+    // 학생: 처리 완료 후 노드 삭제
+    public async Task DeleteMissionRequest(string studentPrefix)
+    {
+        await RealtimeDB.Child("missionRequests").Child(studentPrefix).RemoveValueAsync();
+    }
+
+    // ──────────────────────────────────────────
+    // 유저 role 조회 (Firestore users 컬렉션)
+    // ──────────────────────────────────────────
+    public async Task<string> GetUserRole(string email)
+    {
+        Firebase.Firestore.Query query = Firestore.Collection("users").WhereEqualTo("email", email);
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        if (snapshot.Count > 0)
+        {
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+                return doc.TryGetValue("role", out string role) ? role : "student";
+        }
+        return "student";
+    }
+
+
     #endregion
 }

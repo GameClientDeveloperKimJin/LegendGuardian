@@ -27,6 +27,9 @@ EditorBuildSettings:
     path: Assets/1_Scenes/SE_Scene/RewardScene.unity
     guid: 52b1a62b0e7159849a34a02441142645
   - enabled: 1
+    path: Assets/1_Scenes/TeacherScene_KJ.unity
+    guid: 148eb02a9c3c13f40b0b875819959c90
+  - enabled: 1
     path: Assets/1_Scenes/SE_Scene/QuizScene.unity
     guid: 598a3b2eed01e3144bd46553cab851fd
   m_configObjects:
