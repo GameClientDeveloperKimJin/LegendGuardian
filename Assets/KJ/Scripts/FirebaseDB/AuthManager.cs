@@ -75,6 +75,9 @@ public class AuthManager : MonoBehaviour
 
             UserData userData = new UserData(LoginUserID, LoginUserName);
             userDictionary[userID] = userData;
+
+            string uid = FirebaseManager.Instance.Auth.CurrentUser.UserId; // UID 사용
+            await FirebaseManager.Instance.Firestore.Collection("users").Document(uid).UpdateAsync("isOnline", true);
         }
         catch (Exception e)
         {
@@ -204,12 +207,13 @@ public class AuthManager : MonoBehaviour
     /// <summary>
     /// 로그아웃
     /// </summary>
-    public void SignOut()
+    public async void SignOut()
     {
         try
         {
             FirebaseManager.Instance?.Auth?.SignOut();
             RemoveTeamListener();
+
             Debug.Log("로그아웃 완료");
         }
         catch (Exception e)

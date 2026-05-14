@@ -26,11 +26,15 @@ public class ApproveRequestItem : MonoBehaviour
         missionNameTMP.text = $"미션: {this.requestData.MissionName}";
         missionRewardTMP.text = $"보상: {this.requestData.MissionReward}";
 
+        //승인 버튼
         approveButton.onClick.AddListener(() =>
         {
             OnApprove();
             approvalView.ClearRequestItem();
+
+            approvalView.CompensationPaid(requestData.StudentPrefix, int.Parse(this.requestData.MissionReward)); 
         });
+        //거절 버튼
         rejectButton.onClick.AddListener(() =>
         {
             OnReject();

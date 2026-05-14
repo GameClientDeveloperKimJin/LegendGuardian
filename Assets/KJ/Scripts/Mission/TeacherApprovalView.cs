@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 /// <summary>
-/// 선생님이 학생의 미션 승인 요청을 실시간으로 확인
+/// 선생님이 학생의 미션 승인 요청 관리 및 관련 데이터 관리
 /// </summary>
 public class TeacherApprovalView : MonoBehaviour
 {
@@ -17,6 +16,8 @@ public class TeacherApprovalView : MonoBehaviour
     private Transform requestItemAllContent, requestItemOutdoorContent, requestItem1FContent, requestItem2FContent, requestItem3FContent;
     [SerializeField]
     private TextMeshProUGUI emptyLabel;
+
+    public int AllRequestCount => requestItemAllContent.childCount; //승인 대기 건수
 
     private List<GameObject> spawnedAllIRequesttems = new(); //전체에 해당하는 요청 아이템 리스트
     private List<GameObject> spawnedTypeRequestItems = new(); //루트 타입에 해당하는 요청 아이템 리스트
@@ -116,6 +117,25 @@ public class TeacherApprovalView : MonoBehaviour
         RefreshCountTexts();
     }
 
+    public Dictionary<string, int> rewardedUserDic { get; private set; } = new ();
+
+    /// <summary>
+    /// 유저에게 지급한 보상 관리
+    /// </summary>
+    public void CompensationPaid(string userID,int reward)
+    {
+        if(rewardedUserDic.ContainsKey(userID))
+        {
+            rewardedUserDic[userID] += reward;
+        }
+        else
+        {
+            rewardedUserDic[userID] = reward;
+        }
+    }
+    /// <summary>
+    /// 승인 요청 업데이트 시, 기존에 생성된 아이템 삭제
+    /// </summary>
     public void ClearRequestItem()
     {
         foreach (var item in spawnedAllIRequesttems)
@@ -139,6 +159,9 @@ public class TeacherApprovalView : MonoBehaviour
 
         RefreshCountTexts();
     }
+    /// <summary>
+    /// 건 수 업데이트
+    /// </summary>
     private void RefreshCountTexts()
     {
         requestItemAllTMP.text = $"전체({requestItemAllContent.childCount})";
