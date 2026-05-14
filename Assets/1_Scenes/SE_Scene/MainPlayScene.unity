@@ -170,10 +170,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c8e857fae8f384198c737b9097408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  persistentCanvases:
-  - {fileID: 195378765}
   canvasesToShow:
   - {fileID: 2023537331}
+  canvasesToHide: []
 --- !u!114 &15563396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2310,10 +2309,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c8e857fae8f384198c737b9097408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  persistentCanvases:
-  - {fileID: 195378765}
   canvasesToShow:
   - {fileID: 1402396519}
+  canvasesToHide: []
 --- !u!114 &512154209
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2844,10 +2842,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c8e857fae8f384198c737b9097408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  persistentCanvases:
-  - {fileID: 195378765}
   canvasesToShow:
   - {fileID: 370252617}
+  canvasesToHide: []
 --- !u!1 &622239833
 GameObject:
   m_ObjectHideFlags: 0
@@ -2899,10 +2896,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c8e857fae8f384198c737b9097408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  persistentCanvases:
-  - {fileID: 195378765}
   canvasesToShow:
   - {fileID: 1402396519}
+  canvasesToHide: []
 --- !u!114 &622239836
 MonoBehaviour:
   m_ObjectHideFlags: 0
