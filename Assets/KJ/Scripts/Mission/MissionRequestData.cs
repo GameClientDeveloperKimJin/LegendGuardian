@@ -8,6 +8,7 @@ public class MissionRequestData
     public string TeamID;
     public string MissionID;
     public string MissionName;
+    public string MissionReward;
     public string RouteID;
     public string Status;
     

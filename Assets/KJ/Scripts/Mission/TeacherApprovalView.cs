@@ -31,7 +31,7 @@ public class TeacherApprovalView : MonoBehaviour
         //if (IsSameRequests(requestDataList)) return;
         //lastRequests = new List<MissionRequestData>(requestDataList);
 
-        emptyLabel.gameObject.SetActive(requestItemContent.childCount == 0);
+        //emptyLabel.gameObject.SetActive(requestItemContent.childCount == 0);
 
 
         if (requestDataList.Count >  0)
@@ -47,9 +47,12 @@ public class TeacherApprovalView : MonoBehaviour
                 GameObject item = Instantiate(requestItemPrefab, requestItemContent);
                 item.GetComponent<ApproveRequestItem>().Init(requestData);
                 spawnedItems.Add(item);
+
+                Debug.Log($"미션 보상: {requestData.MissionReward}");
             }
         }
-      
+
+        //emptyLabel.gameObject.SetActive(requestItemContent.childCount == 0);
     }
 
     private bool IsSameRequests(List<MissionRequestData> newList)

@@ -28,12 +28,9 @@ public class MissionData
 }
 public class MainSceneView : MonoBehaviour 
 {
-    [SerializeField]
-    Button routeButtonPrefab; 
-
+    [Header("미션 UI 관련")]
     [SerializeField]
     Transform routeButtonContent; 
-
 
     [SerializeField]
     private GameObject missionCanvas; 
@@ -54,9 +51,23 @@ public class MainSceneView : MonoBehaviour
     private TextMeshProUGUI missionDetailTMP; 
 
     [SerializeField]
-    private TextMeshProUGUI rewardTMP; 
+    private TextMeshProUGUI rewardTMP;
 
-    Button[] routeButtons;
+    [Header("버튼")]
+    [SerializeField]
+    Button routeButtonPrefab;
+    [SerializeField]
+    Button teacherSendBtn;
+
+    [Header("연출 관련")]
+    [SerializeField]
+    GameObject waitCanvas;
+
+    [SerializeField]
+    TextMeshProUGUI LodingTMP;
+
+    [SerializeField]
+    Canvas quizeCanvas;
 
     private Dictionary<string, MissionData> missionDic = new(); //미션 ID : 미션 데이터
 
@@ -66,9 +77,14 @@ public class MainSceneView : MonoBehaviour
 
     private string currentMissionID;
 
+    Button[] routeButtons;
+
     public MissionMapClearType MissionClearType { get; private set; } = MissionMapClearType.None; 
 
     public static Action<QuizArea> OnQuizStarted;
+
+    [SerializeField]
+    int loadingMaxCount = 3;
 
     private IEnumerator Start()
     {
@@ -107,76 +123,7 @@ public class MainSceneView : MonoBehaviour
 
     }
 
-    private async void OnTeacherSendBtn()
-    {
-        if (string.IsNullOrEmpty(currentMissionID)) return;
-
-        teacherSendBtn.interactable = false;
-
-        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
-        string teamId = await AuthManager.Instance.GetUserTeamName();
-
-        await FirebaseManager.Instance.SendMissionApprovalRequest(
-            studentPrefix,
-            AuthManager.Instance.LoginUserID,
-            AuthManager.Instance.LoginUserName,
-            teamId,
-            currentMissionID,
-            missionDic[currentMissionID].MissionName,
-            currentRouteID
-        );
-
-        FirebaseManager.Instance.ListenMyRequest(studentPrefix, OnRequestStatusChanged);
-
-        StartCoroutine(LoadingTMP(currentMissionID));
-    }
-    [SerializeField]
-    int loadingMaxCount = 3; 
-
-    [SerializeField]
-    GameObject waitCanvas;
-
-    [SerializeField]
-    TextMeshProUGUI LodingTMP;
-
-    IEnumerator LoadingTMP(string missionID)
-    {
-        if(!missionDic.TryGetValue(missionID, out var data))
-        {
-            yield break;
-        }
-
-        missionCanvas.gameObject.SetActive(false);
-        waitCanvas.gameObject.SetActive(true);
-
-        LodingTMP.text = "";
-
-        int currentLoadingCount = 0;
-
-        
-
-        while (!data.IsMissionClear)
-        {
-            currentLoadingCount++;
-
-            if (currentLoadingCount > loadingMaxCount)
-            {
-                currentLoadingCount = 0;
-                LodingTMP.text = "";
-            }
-            else
-            {
-                string tmp = new string('.', currentLoadingCount);
-
-                LodingTMP.text = tmp;
-            }
-
-            yield return new WaitForSeconds(0.5f);
-        }
-
-        teacherSendBtn.interactable = true;
-        waitCanvas.gameObject.SetActive(false);
-    }
+  
 
     private async void OnRequestStatusChanged(string status)
     {
@@ -207,7 +154,7 @@ public class MainSceneView : MonoBehaviour
         teacherSendBtn.interactable = true;
     }
 
-
+    #region 미션 데이터 설정
     /// <summary>
     /// 미션 데이터 1회 설정
     /// </summary>
@@ -274,21 +221,9 @@ public class MainSceneView : MonoBehaviour
         }
       
     }
+    #endregion
 
-    private void OnMissionButtonClicked(string routeID)
-    {
-        currentRouteID = routeID;
-
-        if(!routeMissionDic.TryGetValue(routeID,out var missions))
-        {
-            return;
-        }
-
-        OnMissionView(routeID, missions);
-    }
-
-
-
+    #region UI 연출
     /// <summary>
     /// 미션 ui 활성화
     /// </summary>
@@ -330,6 +265,45 @@ public class MainSceneView : MonoBehaviour
 
         }
     }
+    IEnumerator LoadingTMP(string missionID)
+    {
+        if (!missionDic.TryGetValue(missionID, out var data))
+        {
+            yield break;
+        }
+
+        missionCanvas.gameObject.SetActive(false);
+        waitCanvas.gameObject.SetActive(true);
+
+        LodingTMP.text = "";
+
+        int currentLoadingCount = 0;
+
+
+
+        while (!data.IsMissionClear)
+        {
+            currentLoadingCount++;
+
+            if (currentLoadingCount > loadingMaxCount)
+            {
+                currentLoadingCount = 0;
+                LodingTMP.text = "";
+            }
+            else
+            {
+                string tmp = new string('.', currentLoadingCount);
+
+                LodingTMP.text = tmp;
+            }
+
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        teacherSendBtn.interactable = true;
+        waitCanvas.gameObject.SetActive(false);
+    }
+    #endregion
 
     /// <summary>
     /// 미션 클리어 여부 및 퀴즈 시작
@@ -394,44 +368,7 @@ public class MainSceneView : MonoBehaviour
         }
     }
 
-    [SerializeField]
-    Canvas quizeCanvas;
-
-    [SerializeField]
-    Button teacherSendBtn;
-
-    private void OnGUI()
-    {
-        if (GUILayout.Button("1번째 미션 완료"))
-        {
-            if (routeMissionDic.TryGetValue(currentRouteID,out var missions) && missionDic.ContainsKey(missions[0]))
-            {
-                missionDic[missions[0]].IsMissionClear = true;
-                AllMissionClear();
-
-                
-            }
-
-        }
-        if (GUILayout.Button("2번째 미션 완료"))
-        {
-            if (routeMissionDic.TryGetValue(currentRouteID, out var missions) && missionDic.ContainsKey(missions[1]))
-            {
-                missionDic[missions[1]].IsMissionClear = true;
-                AllMissionClear();
-            }
-        }
-        if (GUILayout.Button("3번째 미션 완료"))
-        {
-            if (routeMissionDic.TryGetValue(currentRouteID, out var missions) && missionDic.ContainsKey(missions[2]))
-            {
-                missionDic[missions[2]].IsMissionClear = true;
-                AllMissionClear();
-            }
-        }
-    }
-
-    #region 미션 버튼
+    #region 각 루트 버튼 연출
     /// <summary>
     /// 2번째 미션 완료 시,
     /// </summary>
@@ -489,6 +426,49 @@ public class MainSceneView : MonoBehaviour
 
     }
     #endregion
+
+    #region 버튼 콜백
+    private void OnMissionButtonClicked(string routeID)
+    {
+        currentRouteID = routeID;
+
+        if (!routeMissionDic.TryGetValue(routeID, out var missions))
+        {
+            return;
+        }
+
+        OnMissionView(routeID, missions);
+    }
+
+    private async void OnTeacherSendBtn()
+    {
+        if (string.IsNullOrEmpty(currentMissionID)) return;
+
+        teacherSendBtn.interactable = false;
+
+        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
+        string teamId = await AuthManager.Instance.GetUserTeamName();
+
+        await FirebaseManager.Instance.ClearMyPendingRequest(studentPrefix);
+
+        await FirebaseManager.Instance.SendMissionApprovalRequest(
+            studentPrefix,
+            AuthManager.Instance.LoginUserID,
+            AuthManager.Instance.LoginUserName,
+            teamId,
+            currentMissionID,
+            missionDic[currentMissionID].MissionName,
+            missionDic[currentMissionID].MissionReward,
+            currentRouteID
+        );
+
+        FirebaseManager.Instance.ListenMyRequest(studentPrefix, OnRequestStatusChanged);
+
+        StartCoroutine(LoadingTMP(currentMissionID));
+    }
+
+    #endregion
+
     private async void OnDestroy()
     {
         teacherSendBtn.onClick.RemoveAllListeners();

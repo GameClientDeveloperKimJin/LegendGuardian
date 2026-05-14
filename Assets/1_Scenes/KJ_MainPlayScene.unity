@@ -2911,7 +2911,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c66d487e0abc1a48b0ca7cc1242af47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  routeButtonPrefab: {fileID: 8863580806556657873, guid: 42a5fe85b3666bc438010e85a58a1857, type: 3}
   routeButtonContent: {fileID: 1204933404}
   missionCanvas: {fileID: 1177648911}
   titleMapTMP: {fileID: 1609316487}
@@ -2923,11 +2922,12 @@ MonoBehaviour:
   missionTitleTMP: {fileID: 1832733229}
   missionDetailTMP: {fileID: 776183340}
   rewardTMP: {fileID: 802203394}
-  loadingMaxCount: 3
+  routeButtonPrefab: {fileID: 8863580806556657873, guid: 42a5fe85b3666bc438010e85a58a1857, type: 3}
+  teacherSendBtn: {fileID: 1966423534}
   waitCanvas: {fileID: 382458490}
   LodingTMP: {fileID: 269213158}
   quizeCanvas: {fileID: 247897158}
-  teacherSendBtn: {fileID: 1966423534}
+  loadingMaxCount: 3
 --- !u!1 &413434906
 GameObject:
   m_ObjectHideFlags: 0
@@ -4072,7 +4072,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 1587564937}
-  m_Horizontal: 1
+  m_Horizontal: 0
   m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
@@ -12421,7 +12421,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 99
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4df6e31f3a3396a448588014232483f7, type: 2}
   m_sharedMaterial: {fileID: 7682858408187000808, guid: 4df6e31f3a3396a448588014232483f7, type: 2}

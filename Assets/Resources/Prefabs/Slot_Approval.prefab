@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 1410205403592648105}
   - component: {fileID: 2544787995836886927}
   m_Layer: 5
-  m_Name: Txt_Reward
+  m_Name: 'Txt_Reward '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -155,8 +155,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -154, y: -76}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -126.999985, y: -69.70471}
+  m_SizeDelta: {x: 254, y: 37.4095}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1410205403592648105
 CanvasRenderer:
@@ -186,7 +186,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uBCF4\uC0C1 : @"
+  m_text: "\uBCF4\uC0C1 : "
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4df6e31f3a3396a448588014232483f7, type: 2}
   m_sharedMaterial: {fileID: 7682858408187000808, guid: 4df6e31f3a3396a448588014232483f7, type: 2}
@@ -1170,5 +1170,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   studentNameTMP: {fileID: 1878281440988743841}
   missionNameTMP: {fileID: 676218883691277635}
+  missionRewardTMP: {fileID: 2544787995836886927}
   approveButton: {fileID: 2994179247220657834}
   rejectButton: {fileID: 8269758426772132201}

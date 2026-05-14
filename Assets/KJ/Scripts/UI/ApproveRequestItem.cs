@@ -11,6 +11,8 @@ public class ApproveRequestItem : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI studentNameTMP; //요청한 학생 이름
     [SerializeField] private TextMeshProUGUI missionNameTMP; //요청한 미션 이름
+    [SerializeField] private TextMeshProUGUI missionRewardTMP; //요청한 미션 보상
+
     [SerializeField] private Button approveButton; //수락
     [SerializeField] private Button rejectButton; //거절
 
@@ -20,8 +22,9 @@ public class ApproveRequestItem : MonoBehaviour
     {
         this.requestData = requestData;
 
-        studentNameTMP.text = this.requestData.StudentName;
-        missionNameTMP.text = this.requestData.MissionName;
+        studentNameTMP.text = $"이름: {this.requestData.StudentName}";
+        missionNameTMP.text = $"미션: {this.requestData.MissionName}";
+        missionRewardTMP.text = $"보상: {this.requestData.MissionReward}";
 
         approveButton.onClick.AddListener(OnApprove);
         rejectButton.onClick.AddListener(OnReject);

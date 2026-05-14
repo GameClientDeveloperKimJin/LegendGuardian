@@ -47,8 +47,14 @@ public class TitleSceneUIController : MonoBehaviour
     [SerializeField]
     Canvas uiRuletCanvas;
 
+    private void Awake()
+    {
+        Screen.sleepTimeout = SleepTimeout.NeverSleep; //꺼지지 않게
+    }
     private void OnEnable()
     {
+       
+
         if(AuthManager.Instance != null)
         {
             AuthManager.Instance.OnAuthInfo += OnInfoUI;

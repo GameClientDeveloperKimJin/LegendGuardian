@@ -364,9 +364,13 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     // ──────────────────────────────────────────
     public async Task SendMissionApprovalRequest(
         string studentPrefix, string studentId, string studentName,
-        string teamId, string missionId, string missionName, string routeId)
+        string teamId, string missionId, string missionName, string missionReward, string routeId)
     {
+        Debug.Log(missionReward);
+
         DatabaseReference reqRef = RealtimeDB.Child("missionRequests").Child(studentPrefix);
+
+        await reqRef.OnDisconnect().RemoveValue();
 
         await reqRef.SetValueAsync(new System.Collections.Generic.Dictionary<string, object>
         {
@@ -375,6 +379,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
             ["teamId"] = teamId,
             ["missionId"] = missionId,
             ["missionName"] = missionName,
+            ["missionReward"] = missionReward,
             ["routeId"] = routeId,
             ["status"] = "pending",
         });
@@ -419,6 +424,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
                     TeamID = child.Child("teamId").Value?.ToString() ?? "",
                     MissionID = child.Child("missionId").Value?.ToString() ?? "",
                     MissionName = child.Child("missionName").Value?.ToString() ?? "",
+                    MissionReward = child.Child("missionReward").Value?.ToString() ?? "",
                     RouteID = child.Child("routeId").Value?.ToString() ?? "",
                     Status = status,
                 });
@@ -518,6 +524,16 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         return "student";
     }
 
-
+    /// <summary>
+    /// 최초 1회, 자신의 승인 요청 노드가 존재한다면 삭제. ( 노드 엉켜지는 경우를 방지 )
+    /// </summary>
+    /// <param name="studentPrefix"></param>
+    /// <returns></returns>
+    public async Task ClearMyPendingRequest(string studentPrefix)
+    {
+        DataSnapshot snapshot = await RealtimeDB.Child("missionRequests").Child(studentPrefix).GetValueAsync();
+        if (snapshot.Exists)
+            await RealtimeDB.Child("missionRequests").Child(studentPrefix).RemoveValueAsync();
+    }
     #endregion
 }
