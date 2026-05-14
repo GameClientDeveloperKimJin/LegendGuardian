@@ -1,11 +1,22 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+public enum QuizArea
+{
+    Outside,
+    Floor1,
+    Floor2,
+    Floor3
+}
 
 public class QuizSceneManager : MonoBehaviour
 {
-    [Header("현재 사용할 퀴즈 세트")]
-    [SerializeField] private QuizSet quizSet;
+    [Header("장소별 퀴즈 세트")]
+    [SerializeField] private QuizSet outsideQuizSet;
+    [SerializeField] private QuizSet floor1QuizSet;
+    [SerializeField] private QuizSet floor2QuizSet;
+    [SerializeField] private QuizSet floor3QuizSet;
 
     [Header("문제 UI")]
     [SerializeField] private Image questionImage;
@@ -28,6 +39,7 @@ public class QuizSceneManager : MonoBehaviour
     [Header("힌트 텍스트")]
     [SerializeField] private TMP_Text hintText;
 
+    private QuizSet currentQuizSet;
     private int currentQuestionIndex = 0;
 
     // -1 = 아직 선택 안 함
@@ -37,21 +49,28 @@ public class QuizSceneManager : MonoBehaviour
 
     private void Start()
     {
-        if (quizSet == null)
-        {
-            Debug.LogError("QuizSet이 연결되지 않았습니다.");
-            return;
-        }
-
-        answerResults = new int[quizSet.questions.Length];
-
-        for (int i = 0; i < answerResults.Length; i++)
-        {
-            answerResults[i] = -1;
-        }
-
         ConnectButtons();
-        ShowQuestion(0);
+
+        MainSceneView.OnQuizStarted += StartQuizByArea;
+
+        // 시작 시 결과 이미지 숨김
+        if (resultImage != null)
+        {
+            resultImage.gameObject.SetActive(false);
+        }
+
+        // 시작 시 힌트 비우기
+        if (hintText != null)
+        {
+            hintText.text = "";
+        }
+
+
+    }
+
+    private void OnDestroy()
+    {
+        MainSceneView.OnQuizStarted -= StartQuizByArea;
     }
 
     private void ConnectButtons()
@@ -71,7 +90,7 @@ public class QuizSceneManager : MonoBehaviour
     {
         currentQuestionIndex = index;
 
-        QuizQuestion question = quizSet.questions[currentQuestionIndex];
+        QuizQuestion question = currentQuizSet.questions[currentQuestionIndex];
 
         questionImage.sprite = question.questionImage;
         questionText.text = question.questionText;
@@ -88,7 +107,7 @@ public class QuizSceneManager : MonoBehaviour
         UpdateOptionButtons();
 
         prevButton.interactable = currentQuestionIndex > 0;
-        nextButton.interactable = currentQuestionIndex < quizSet.questions.Length - 1;
+        nextButton.interactable = currentQuestionIndex < currentQuizSet.questions.Length - 1;
     }
 
     private void SelectAnswer(int selectedIndex)
@@ -99,11 +118,18 @@ public class QuizSceneManager : MonoBehaviour
             return;
         }
 
-        QuizQuestion question = quizSet.questions[currentQuestionIndex];
+        QuizQuestion question = currentQuizSet.questions[currentQuestionIndex];
 
         if (selectedIndex == question.correctAnswerIndex)
         {
             answerResults[currentQuestionIndex] = 1;
+
+            // 점수 +3
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.AddScore(3);
+            }
+
             Debug.Log("정답입니다!");
         }
         else
@@ -159,7 +185,7 @@ public class QuizSceneManager : MonoBehaviour
 
     private void ShowNextQuestion()
     {
-        if (currentQuestionIndex < quizSet.questions.Length - 1)
+        if (currentQuestionIndex < currentQuizSet.questions.Length - 1)
         {
             ShowQuestion(currentQuestionIndex + 1);
         }
@@ -167,11 +193,65 @@ public class QuizSceneManager : MonoBehaviour
 
     private void ShowHint()
     {
-        QuizQuestion question = quizSet.questions[currentQuestionIndex];
+        QuizQuestion question = currentQuizSet.questions[currentQuestionIndex];
 
         if (hintText != null)
         {
             hintText.text = question.hintText;
         }
+    }
+
+    public void StartQuizByArea(QuizArea area)
+    {
+        switch (area)
+        {
+            case QuizArea.Outside:
+                currentQuizSet = outsideQuizSet;
+                break;
+
+            case QuizArea.Floor1:
+                currentQuizSet = floor1QuizSet;
+                break;
+
+            case QuizArea.Floor2:
+                currentQuizSet = floor2QuizSet;
+                break;
+
+            case QuizArea.Floor3:
+                currentQuizSet = floor3QuizSet;
+                break;
+        }
+
+        if (currentQuizSet == null)
+        {
+            Debug.LogError($"{area} QuizSet이 연결되지 않았습니다.");
+            return;
+        }
+
+        // 문제 인덱스 초기화
+        currentQuestionIndex = 0;
+
+        // 문제별 정답 상태 초기화
+        answerResults = new int[currentQuizSet.questions.Length];
+
+        for (int i = 0; i < answerResults.Length; i++)
+        {
+            answerResults[i] = -1;
+        }
+
+        // 결과 이미지 초기화
+        if (resultImage != null)
+        {
+            resultImage.gameObject.SetActive(false);
+        }
+
+        // 힌트 초기화
+        if (hintText != null)
+        {
+            hintText.text = "";
+        }
+
+        // 첫 문제 표시
+        ShowQuestion(0);
     }
 }

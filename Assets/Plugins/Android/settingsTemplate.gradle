@@ -1,4 +1,14 @@
 pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'org.jetbrains.kotlin.android') {
+                useVersion '1.9.22'
+            }
+            if (requested.id.id == 'org.jetbrains.kotlin.jvm') {
+                useVersion '1.9.22'
+            }
+        }
+    }
     repositories {
         **ARTIFACTORYREPOSITORY**
         gradlePluginPortal()

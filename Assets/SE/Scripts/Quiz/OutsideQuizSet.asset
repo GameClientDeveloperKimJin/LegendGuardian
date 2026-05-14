@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6755a0faacdc89147a1274af949c77b7, type: 3}
+  m_Name: OutsideQuizSet
+  m_EditorClassIdentifier: 
+  setName: OutsideQuizSet
+  questions:
+  - questionImage: {fileID: 21300000, guid: 2840d3d0d65b2d74bad12f055a1ef1cb, type: 3}
+    questionText: "\uD0DC\uC591\uAD11 \uBC1C\uC804\uC740 \uBB34\uC5C7\uC744 \uC774\uC6A9\uD574
+      \uC804\uAE30\uB97C \uB9CC\uB4E4\uAE4C\uC694?"
+    options:
+    - "\uBC14\uB78C"
+    - "\uBB3C"
+    - "\uD587\uBE5B"
+    - "\uD759"
+    correctAnswerIndex: 2
+    hintText: "\uD558\uB298\uC5D0\uC11C \uBC1D\uAC8C \uBE5B\uB098\uB294 \uAC83\uC744
+      \uC774\uC6A9\uD574\uC694!"
+  - questionImage: {fileID: 21300000, guid: bf0ea76427ed2e0488224c1642da8c60, type: 3}
+    questionText: "\uD0DC\uC591\uAD11 \uBC1C\uC804\uC758 \uC88B\uC740 \uC810\uC73C\uB85C
+      \uC54C\uB9DE\uC740 \uAC83\uC740 \uBB34\uC5C7\uC77C\uAE4C\uC694?"
+    options:
+    - "\uACF5\uAE30\uB97C \uB9CE\uC774 \uC624\uC5FC\uC2DC\uD0A8\uB2E4"
+    - "\uD587\uBE5B\uC73C\uB85C \uC804\uAE30\uB97C \uB9CC\uB4E4 \uC218 \uC788\uB2E4"
+    - "\uC4F0\uB808\uAE30\uAC00 \uC544\uC8FC \uB9CE\uC774 \uB098\uC628\uB2E4"
+    - "\uBC24\uC5D0\uB9CC \uC804\uAE30\uB97C \uB9CC\uB4E4 \uC218 \uC788\uB2E4"
+    correctAnswerIndex: 1
+    hintText: "\uC790\uC5F0\uC758 \uC5D0\uB108\uC9C0\uB97C \uC0AC\uC6A9\uD558\uB294
+      \uCE5C\uD658\uACBD \uBC1C\uC804\uC774\uC5D0\uC694!"
+  - questionImage: {fileID: 21300000, guid: 563a4b04c75d27741aed5857ffc77d3d, type: 3}
+    questionText: "\uD0DC\uC591\uAD11 \uD328\uB110\uC740 \uC8FC\uB85C \uC5B4\uB514\uC5D0
+      \uC124\uCE58\uD560\uAE4C\uC694?"
+    options:
+    - "\uAC74\uBB3C \uC625\uC0C1"
+    - "\uBB3C \uC18D"
+    - "\uB545 \uC18D \uAE4A\uC740 \uACF3"
+    - "\uB0C9\uC7A5\uACE0 \uC548"
+    correctAnswerIndex: 0
+    hintText: "\uD587\uBE5B\uC744 \uB9CE\uC774 \uBC1B\uC744 \uC218 \uC788\uB294 \uC7A5\uC18C\uAC00
+      \uC88B\uC544\uC694!"
+  - questionImage: {fileID: 21300000, guid: 84ea61c63b7331048b7423371902faba, type: 3}
+    questionText: "\uC9C0\uAD6C \uC628\uB09C\uD654\uB97C \uB9C9\uAE30 \uC704\uD574
+      \uD0C4\uC18C \uBC30\uCD9C\uB7C9\uC744 \uC904\uC774\uAC70\uB098 \uC5C6\uC560\uB294
+      \uBAA9\uD45C\uB294 \uBB34\uC5C7\uC77C\uAE4C\uC694?"
+    options:
+    - "\uD0C4\uC18C \uC99D\uAC00"
+    - "\uD0C4\uC18C \uBC30\uCD9C\uAD8C"
+    - "\uD0C4\uC18C \uC911\uB9BD"
+    - "\uD0C4\uC18C \uBC1C\uC790\uAD6D"
+    correctAnswerIndex: 2
+    hintText: "'\uD0C4\uC18C\uC911\uB9BD'\uC740 \uC778\uC704\uC801\uC778 \uD0C4\uC18C
+      \uBC30\uCD9C\uB7C9\uC744 \uC904\uC5EC \uC2E4\uC9C8\uC801\uC778 \uBC30\uCD9C\uB7C9\uC744
+      '0'\uC73C\uB85C \uB9CC\uB4DC\uB294 \uAC83!"

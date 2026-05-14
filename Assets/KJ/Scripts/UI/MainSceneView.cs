@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,20 +13,82 @@ public enum MissionMapType
     floor2,
     floor3,
 }
+public enum MissionMapClearType
+{
+    None,Clear1,Clear2
+}
 
+public class MissionData
+{
+    public string MissionName;
+    public string MissionID;
+    public string MissionDetail;
+    public string MissionReward;
+    public bool IsMissionClear;
+}
+
+/// <summary>
+/// ë¯¸ì…˜ UI ì—°ì¶œ ë° ë¯¸ì…˜ ë°ì´í„° ê´€ë¦¬ (ë¯¸ì…˜ 
+/// </summary>
 public class MainSceneView : MonoBehaviour 
 {
+    [Header("ë¯¸ì…˜ UI ê´€ë ¨")]
     [SerializeField]
-    TextMeshProUGUI nickNameTMP;
+    Transform routeButtonContent; 
 
     [SerializeField]
-    TextMeshProUGUI scoreTMP;
+    private GameObject missionCanvas; 
 
     [SerializeField]
-    Button routeButtonPrefab; //»ı¼ºÇÒ ¹öÆ° ÇÁ¸®Æé
+    private TextMeshProUGUI titleMapTMP; 
 
     [SerializeField]
-    Transform routeButtonContent; //»ı¼ºÇÒ ¹öÆ°ÀÇ À§Ä¡
+    Image mapImage; 
+
+    [SerializeField]
+    Sprite outdoorMap, floorMap_1, floorMap_2, floorMap_3;
+
+    [SerializeField]
+    private TextMeshProUGUI missionTitleTMP; 
+
+    [SerializeField]
+    private TextMeshProUGUI missionDetailTMP; 
+
+    [SerializeField]
+    private TextMeshProUGUI rewardTMP;
+
+    [Header("ë²„íŠ¼")]
+    [SerializeField]
+    Button routeButtonPrefab;
+    [SerializeField]
+    Button teacherSendBtn;
+
+    [Header("ì—°ì¶œ ê´€ë ¨")]
+    [SerializeField]
+    GameObject waitCanvas;
+
+    [SerializeField]
+    TextMeshProUGUI LodingTMP;
+
+    [SerializeField]
+    Canvas quizeCanvas;
+
+    private Dictionary<string, MissionData> missionDic = new(); //ë¯¸ì…˜ ID : ë¯¸ì…˜ ë°ì´í„°
+
+    Dictionary<string, List<string>> routeMissionDic = new(); //ë£¨íŠ¸ ID : ë¯¸ì…˜ IDë¦¬ìŠ¤íŠ¸
+
+    private string currentRouteID;
+
+    private string currentMissionID;
+
+    Button[] routeButtons;
+
+    public MissionMapClearType MissionClearType { get; private set; } = MissionMapClearType.None; 
+
+    public static Action<QuizArea> OnQuizStarted;
+
+    [SerializeField]
+    int loadingMaxCount = 3;
 
     private IEnumerator Start()
     {
@@ -35,14 +98,11 @@ public class MainSceneView : MonoBehaviour
         Init();
     }
 
-    Button[] routeButtons;
-
     /// <summary>
-    /// ¸ŞÀÎ ¾À ÀüÈ¯ ½Ã, ÃÊ±âÈ­ ÇÒ ³»¿ë ( 1È¸¼º)
+    /// ì´ˆê¸°í™”
     /// </summary>
     private async void Init()
     {
-        // ÆÀ¿¡ ¸Â´Â ·çÆ® ¹öÆ° µ¿Àû »ı¼º
         string teamID = await AuthManager.Instance.GetUserTeamName();
 
         var (routesID,routesName) = await FirebaseManager.Instance.GetTeamIDToRoutes(teamID);
@@ -54,148 +114,378 @@ public class MainSceneView : MonoBehaviour
             routeButtons[i] = Instantiate(routeButtonPrefab, routeButtonContent);
             routeButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = routesName[i];
 
-            routeButtons[i].GetComponent<RouteButtonItem>().Init(i,routesID[i], routesName[i]); //¹öÆ° ÀÎµ¦½º ¹øÈ£, ·çÆ® ID , ·çÆ® ³×ÀÓ
+            routeButtons[i].GetComponent<RouteButtonItem>().Init(i,routesID[i], routesName[i]); //ì¸ë±ìŠ¤ë²ˆí˜¸, ë£¨íŠ¸ID, ë£¨íŠ¸ ì´ë¦„ 
 
-            int captureIndex = i; //Å¬·ÎÀú ¹®Á¦
-            routeButtons[i].onClick.AddListener(() => OnMissionButtonClicked(teamID, routesID[captureIndex]));
+            await OnMissionDataSet(teamID, routesID[i]);
+
+            int captureIndex = i; //í´ë¡œì € ë¬¸ì œ 
+
+            routeButtons[i].onClick.AddListener(() => OnMissionButtonClicked(routesID[captureIndex]) );
         }
 
+        teacherSendBtn.onClick.AddListener(OnTeacherSendBtn);
 
     }
 
+  
+
+    private async void OnRequestStatusChanged(string status)
+    {
+        if (status == "pending") return; 
+
+        //string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
+
+        FirebaseManager.Instance.StopListenMyRequest();
+
+       // await FirebaseManager.Instance.DeleteMissionRequest(studentPrefix);
+
+        if (status == "approved")
+        {
+            if (missionDic.TryGetValue(currentMissionID, out MissionData mission))
+            {
+                mission.IsMissionClear = true;
+
+                //ë³´ìƒ ì§€ê¸‰
+                long missionRewardValue = long.Parse(mission.MissionReward);
+
+                await FirebaseManager.Instance.UpdateUserScore(AuthManager.Instance?.LoginUserID, missionRewardValue);
+
+            }
+
+            AllMissionClear();
+        }
+
+        teacherSendBtn.interactable = true;
+    }
+
+    #region ë¯¸ì…˜ ë°ì´í„° ì„¤ì •
     /// <summary>
-    /// ·çÆ® ¹öÆ° Å¬¸¯ ½Ã, Äİ¹é
+    /// ë¯¸ì…˜ ë°ì´í„° 1íšŒ ì„¤ì •
     /// </summary>
     /// <param name="teamID"></param>
     /// <param name="routeID"></param>
-    private async void OnMissionButtonClicked(string teamID, string routeID)
+    private async Task OnMissionDataSet(string teamID, string routeID)
     {
-        var dic = await FirebaseManager.Instance.GetRouteIDToMission(teamID);
-
-        Debug.Log(dic != null);
-
-        foreach(var a in dic)
+        try
         {
-            if(a.Key == routeID)
-            {
-                Debug.Log($"Å° : {a.Key} , °ª : {a.Value}");
+            Dictionary<string, List<string>> dic = await FirebaseManager.Instance.GetRouteIDToMission(teamID);
 
-                OnMissionUIView(a.Key, a.Value); //a.Key = ·çÆ® ID , a.Value = ¹Ì¼Ç ID
+            foreach (var a in dic)
+            {
+                if (routeID == a.Key)
+                {
+                    foreach (string missionID in a.Value)
+                    {
+                        await OnMissionData(a.Key, a.Value);
+                    }
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            Debug.LogError(e.Message);
+        }
+
+    }
+
+
+    /// <summary>
+    /// ë¯¸ì…˜ ë”•ì…”ë„ˆë¦¬ ë°ì´í„° ì„¤ì •
+    /// </summary>
+    /// <param name="routeID"></param>
+    private async Task OnMissionData(string routeID,List<string> missionList)
+    {
+        try
+        {
+            routeMissionDic[routeID] = new List<string>(missionList);
+
+            foreach (string missionID in missionList)
+            {
+                if (string.IsNullOrEmpty(missionID)) continue;
+
+                if (!missionDic.ContainsKey(missionID))
+                {
+                    Dictionary<string, object> missionAllDic = await FirebaseManager.Instance.GetMissionAllData(missionID);
+
+                    missionDic[missionID] = new MissionData()
+                    {
+                        MissionName = missionAllDic.TryGetValue("name", out var name) ? name.ToString() : "",
+                        MissionDetail = missionAllDic.TryGetValue("detail", out var detail) ? detail.ToString() : "",
+                        MissionReward = missionAllDic.TryGetValue("reward", out var reward) ? reward.ToString() : "",
+                        MissionID = missionID,
+
+                        IsMissionClear = false,
+                    };
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            Debug.LogError(e.Message);
+        }
+      
+    }
+    #endregion
+
+    #region UI ì—°ì¶œ
+    /// <summary>
+    /// ë¯¸ì…˜ ui í™œì„±í™”
+    /// </summary>
+    /// <param name="routeID"></param>
+    /// <param name="missionList"></param>
+    private void OnMissionView(string routeID,List<string> missionList)
+    {
+
+        foreach (string missionID in missionList)
+        {
+            if (string.IsNullOrEmpty(missionID))
+            {
+                continue;
+            }
+            if (missionDic[missionID].IsMissionClear)
+            {
+                continue;
+            }
+
+            currentMissionID = missionID;
+
+            missionCanvas.gameObject.SetActive(true);
+
+            if (routeID == MissionMapType.outdoor.ToString())
+            {
+                titleMapTMP.text = $"í˜„ì¬ ìœ„ì¹˜ ì•¼ì™¸";
+                mapImage.sprite = outdoorMap;
+            }
+            if (routeID == MissionMapType.floor1.ToString())
+            {
+                titleMapTMP.text = $"í˜„ì¬ ìœ„ì¹˜ 1ì¸µ";
+                mapImage.sprite = floorMap_1;
+            }
+
+            missionTitleTMP.text = missionDic[missionID].MissionName;
+            missionDetailTMP.text = missionDic[missionID].MissionDetail;
+            rewardTMP.text = $"ë³´ìƒ : {missionDic[missionID].MissionReward} wh";
+            return;
+
+        }
+    }
+    IEnumerator LoadingTMP(string missionID)
+    {
+        if (!missionDic.TryGetValue(missionID, out var data))
+        {
+            yield break;
+        }
+
+        missionCanvas.gameObject.SetActive(false);
+        waitCanvas.gameObject.SetActive(true);
+
+        LodingTMP.text = "";
+
+        int currentLoadingCount = 0;
+
+
+
+        while (!data.IsMissionClear)
+        {
+            currentLoadingCount++;
+
+            if (currentLoadingCount > loadingMaxCount)
+            {
+                currentLoadingCount = 0;
+                LodingTMP.text = "";
+            }
+            else
+            {
+                string tmp = new string('.', currentLoadingCount);
+
+                LodingTMP.text = tmp;
+            }
+
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        teacherSendBtn.interactable = true;
+        waitCanvas.gameObject.SetActive(false);
+    }
+    #endregion
+
+    /// <summary>
+    /// ë¯¸ì…˜ í´ë¦¬ì–´ ì—¬ë¶€ ë° í€´ì¦ˆ ì‹œì‘
+    /// </summary>
+    private void AllMissionClear()
+    {
+        if (!routeMissionDic.TryGetValue(currentRouteID, out var missions)) return;
+
+        bool allClear = true;
+
+        foreach (string missionID in missions)
+        {
+            if (!missionDic[missionID].IsMissionClear)
+            {
+                allClear = false; 
+                break; 
             }
         }
 
-    }
-
-    [SerializeField]
-    private GameObject missionImage; //¹Ì¼Ç UI
-
-    [SerializeField]
-    private TextMeshProUGUI titleMapTMP; //¸Ê ¼³¸í
-
-    [SerializeField]
-    Image mapImage; //¸Ê ÀÌ¹ÌÁö
-
-    [SerializeField]
-    Sprite outdoorMap, floorMap_1, floorMap_2, floorMap_3;
-
-    [SerializeField]
-    private TextMeshProUGUI missionTitleTMP; //¹Ì¼Ç Á¦¸ñ
-
-    [SerializeField]
-    private TextMeshProUGUI missionDetailTMP; //¹Ì¼Ç ³»¿ë
-
-    [SerializeField]
-    private TextMeshProUGUI rewardTMP; //¹Ì¼Ç º¸»ó
-
-    /// <summary>
-    /// ¹Ì¼Ç UI È°¼ºÈ­
-    /// </summary>
-    /// <param name="routeID"></param>
-    private async void OnMissionUIView(string routeID,string missionID)
-    {
-        missionImage.gameObject.SetActive(true);
-
-        if(routeID == MissionMapType.outdoor.ToString())
+        if (!allClear)
         {
-            titleMapTMP.text = $"ÇöÀç À§Ä¡ ¾ß¿Ü ¹ßÀü¼Ò";
-            mapImage.sprite = outdoorMap;
+            return;
         }
 
-        Dictionary<string,object> missionDic =  await FirebaseManager.Instance.GetMissionAllData(missionID);
+        MissionMapClearType currentType = MissionClearType;
+        MissionMapClearType nextType = (MissionMapClearType)currentType + 1;
 
-        missionTitleTMP.text = $"{missionDic["name"].ToString()}"; //¹Ì¼Ç ÀÌ¸§
+        if (Enum.IsDefined(typeof(MissionMapClearType), nextType)) //ë²”ìœ„ ì²´í¬
+        {
+            currentType = (MissionMapClearType)nextType;
+            MissionClearType = currentType;
 
-        if (missionDic.TryGetValue("detail", out var detail))
-            missionDetailTMP.text = detail.ToString();
+            switch (MissionClearType)
+            {
+                case MissionMapClearType.Clear1:
+                    OnSecondRouteButtonActive();
+                    break;
+                case MissionMapClearType.Clear2:
+                    OnThirdRouteButtonActive();
+                    break;
+            }
+        }
 
-        rewardTMP.text = $"º¸»ó: {missionDic["reward"].ToString()}wh"; //¹Ì¼Ç º¸»ó 
+        quizeCanvas.gameObject.SetActive(true);
 
+        switch (currentRouteID)
+        {
+            case nameof(MissionMapType.outdoor):
+                OnQuizStarted?.Invoke(QuizArea.Outside);
+                break;
+            case nameof(MissionMapType.floor1):
+                OnQuizStarted?.Invoke(QuizArea.Floor1);
+                break;
+            case nameof(MissionMapType.floor2):
+                OnQuizStarted?.Invoke(QuizArea.Floor2);
+                break;
+            case nameof(MissionMapType.floor3):
+                OnQuizStarted?.Invoke(QuizArea.Floor3);
+                break;
+
+        
+        }
     }
 
-
-
+    #region ê° ë£¨íŠ¸ ë²„íŠ¼ ì—°ì¶œ
     /// <summary>
-    /// µÎ¹øÂ° ·çÆ® ¹öÆ° È°¼ºÈ­ 
+    /// 2ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ ì‹œ,
     /// </summary>
     public void OnSecondRouteButtonActive()
     {
         for (int i = 0; i < routeButtons.Length; i++)
         {
-            if (i == 0) //Ã¹¹øÂ° ¹öÆ°
+            if (i == 0) 
             {
-                routeButtons[i].interactable = false; //µÎ¹øÂ° ¹öÆ° Á¦¿ÜÇÑ ³ª¸ÓÁö ¹öÆ° Å¬¸¯ ºÒ°¡ 
+                routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
             }
-            if(i == 1) //2¹øÂ° ¹öÆ°
+            if(i == 1) 
             {
-                routeButtons[i].interactable = true;
-
                 routeButtons[i].GetComponent<RouteButtonItem>().ColorWhiteButton();
             }
-            if( i == 2 || i == 3) //3¹øÂ°,4¹øÂ° ¹öÆ°
-            {
-                routeButtons[i].interactable = false;
-
-                routeButtons[i].GetComponent<RouteButtonItem>().ColorGrayButton();
-            }
         }
-        //Ã¹¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã ,¹öÆ° Å¬¸¯ ºÒ°¡ 
-        //µÎ¹øÂ° ·çÆ® ¹öÆ° »ö»ó º¯°æ -> ±âÁ¸ È¸»ö¿¡¼­ Èò»öÀ¸·Î º¯°æ , ¹öÆ° Å¬¸¯ °¡´É 
-        //³ª¸ÓÁö ¹öÆ° -> ±âÁ¸ È¸»ö À¯Áö , ¹öÆ° Å¬¸¯ ºÒ°¡
     }
 
-    
+
     /// <summary>
-    /// ¼¼¹øÂ° ·çÆ® ¹öÆ° È°¼ºÈ­ 
+    /// 3ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ ì‹œ,
     /// </summary>
     public void OnThirdRouteButtonActive()
     {
         for (int i = 0; i < routeButtons.Length; i++)
         {
-
+            if (i == 0 || i == 1) 
+            {
+                routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
+            }
+            if (i == 2) 
+            {
+                routeButtons[i].GetComponent<RouteButtonItem>().ColorWhiteButton();
+            }
         }
-        //Ã¹¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡ 
-        //µÎ¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡
-
-        //¼¼¹øÂ° ·çÆ® ¹öÆ° »ö»ó º¯°æ -> ±âÁ¸ È¸»ö¿¡¼­ Èò»öÀ¸·Î º¯°æ , ¹öÆ° Å¬¸¯ °¡´É 
-
-        //³ª¸ÓÁö ¹öÆ° -> ±âÁ¸ È¸»ö À¯Áö , ¹öÆ° Å¬¸¯ ºÒ°¡
     }
 
 
     /// <summary>
-    /// ³×¹ø¤Š ·çÆ® ¹öÆ° È°¼ºÈ­ 
+    /// 4ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ ì‹œ,
     /// </summary>
     public void OnFourRouteButtonActive()
     {
         for (int i = 0; i < routeButtons.Length; i++)
         {
-
+            if (i == 0 || i == 1 || i == 2) //1,2,3 
+            {
+                routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
+            }
+            if (i == 3) 
+            {
+                routeButtons[i].GetComponent<RouteButtonItem>().ColorWhiteButton();
+            }
         }
-        //Ã¹¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡ 
-        //µÎ¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡
-        //¼¼¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡
 
-        //4¹øÂ° ·çÆ® ¹öÆ° »ö»ó º¯°æ -> ±âÁ¸ È¸»ö¿¡¼­ Èò»öÀ¸·Î º¯°æ , ¹öÆ° Å¬¸¯ °¡´É 
+    }
+    #endregion
+
+    #region ë²„íŠ¼ ì½œë°±
+    private void OnMissionButtonClicked(string routeID)
+    {
+        currentRouteID = routeID;
+
+        if (!routeMissionDic.TryGetValue(routeID, out var missions))
+        {
+            return;
+        }
+
+        OnMissionView(routeID, missions);
     }
 
+    private async void OnTeacherSendBtn()
+    {
+        if (string.IsNullOrEmpty(currentMissionID)) return;
+
+        teacherSendBtn.interactable = false;
+
+        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0]; //wls6189 
+        string teamId = await AuthManager.Instance.GetUserTeamName();
+
+        await FirebaseManager.Instance.ClearMyPendingRequest(studentPrefix);
+
+        await FirebaseManager.Instance.SendMissionApprovalRequest(
+            studentPrefix,
+            AuthManager.Instance.LoginUserID,
+            AuthManager.Instance.LoginUserName,
+            teamId,
+            currentMissionID,
+            missionDic[currentMissionID].MissionName,
+            missionDic[currentMissionID].MissionReward,
+            currentRouteID
+        );
+
+        FirebaseManager.Instance.ListenMyRequest(studentPrefix, OnRequestStatusChanged);
+
+        StartCoroutine(LoadingTMP(currentMissionID));
+    }
+
+    #endregion
+
+    private async void OnDestroy()
+    {
+        teacherSendBtn.onClick.RemoveAllListeners();
+
+        for(int i = 0; i< routeButtons.Length; i++)
+        {
+            routeButtons[i].onClick.RemoveAllListeners();
+        }
+
+        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
+
+        await FirebaseManager.Instance.DeleteMissionRequest(studentPrefix);
+
+        FirebaseManager.Instance?.StopListenMyRequest();
+    }
 }

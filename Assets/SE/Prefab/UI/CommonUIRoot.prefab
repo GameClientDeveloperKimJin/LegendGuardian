@@ -91,7 +91,7 @@ GameObject:
   - component: {fileID: 6832113072343045431}
   - component: {fileID: 4237861890183734783}
   - component: {fileID: 4741755508593269344}
-  - component: {fileID: 6357114212129798548}
+  - component: {fileID: 4655586876586495402}
   m_Layer: 5
   m_Name: RankingButton
   m_TagString: Untagged
@@ -200,9 +200,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6357114212129798548}
-        m_TargetAssemblyTypeName: SceneMoveButton, Assembly-CSharp
-        m_MethodName: MoveToScene
+      - m_Target: {fileID: 4655586876586495402}
+        m_TargetAssemblyTypeName: PanelSwitchButton, Assembly-CSharp
+        m_MethodName: SwitchPanels
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -212,7 +212,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6357114212129798548
+--- !u!114 &4655586876586495402
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -221,10 +221,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1183640212903617402}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55fd48eef4526e24ea6e23fced0d2fbc, type: 3}
+  m_Script: {fileID: 11500000, guid: d3c8e857fae8f384198c737b9097408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetSceneName: RankingScene
+  panelsToShow: []
+  panelsToHide: []
 --- !u!1 &2223031476232180197
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,7 +238,7 @@ GameObject:
   - component: {fileID: 6770614478715368541}
   - component: {fileID: 5485446599226454159}
   - component: {fileID: 49558483346103738}
-  - component: {fileID: 6798926366492614862}
+  - component: {fileID: 8131959868582653547}
   m_Layer: 5
   m_Name: HomeButton
   m_TagString: Untagged
@@ -346,9 +347,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6798926366492614862}
-        m_TargetAssemblyTypeName: SceneMoveButton, Assembly-CSharp
-        m_MethodName: MoveToScene
+      - m_Target: {fileID: 8131959868582653547}
+        m_TargetAssemblyTypeName: PanelSwitchButton, Assembly-CSharp
+        m_MethodName: SwitchPanels
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -358,7 +359,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6798926366492614862
+--- !u!114 &8131959868582653547
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -367,10 +368,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2223031476232180197}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55fd48eef4526e24ea6e23fced0d2fbc, type: 3}
+  m_Script: {fileID: 11500000, guid: d3c8e857fae8f384198c737b9097408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetSceneName: MainPlayScene
+  panelsToShow: []
+  panelsToHide: []
 --- !u!1 &2431047693639423614
 GameObject:
   m_ObjectHideFlags: 0
@@ -383,7 +385,7 @@ GameObject:
   - component: {fileID: 3855413287341529053}
   - component: {fileID: 7824183549810982604}
   - component: {fileID: 5413972450863104772}
-  - component: {fileID: 3533282936339620015}
+  - component: {fileID: 5848476825126907646}
   m_Layer: 5
   m_Name: MapButton
   m_TagString: Untagged
@@ -492,9 +494,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3533282936339620015}
-        m_TargetAssemblyTypeName: SceneMoveButton, Assembly-CSharp
-        m_MethodName: MoveToScene
+      - m_Target: {fileID: 5848476825126907646}
+        m_TargetAssemblyTypeName: PanelSwitchButton, Assembly-CSharp
+        m_MethodName: SwitchPanels
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -504,7 +506,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &3533282936339620015
+--- !u!114 &5848476825126907646
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -513,10 +515,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2431047693639423614}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55fd48eef4526e24ea6e23fced0d2fbc, type: 3}
+  m_Script: {fileID: 11500000, guid: d3c8e857fae8f384198c737b9097408a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetSceneName: MapScene
+  panelsToShow: []
+  panelsToHide: []
 --- !u!1 &3367980081090691031
 GameObject:
   m_ObjectHideFlags: 0

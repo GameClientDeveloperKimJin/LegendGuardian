@@ -6,7 +6,7 @@ public class ScoreManager : MonoBehaviour
 
     [Header("Score Settings")]
     private int currentScore = 0;
-    private int maxScore = 0;
+    private int maxScore = 140;
 
     [Header("References")]
     [SerializeField] private ScoreUIController scoreUIController;

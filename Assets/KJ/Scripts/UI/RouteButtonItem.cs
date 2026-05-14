@@ -2,6 +2,9 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 메인 씬에 있는 루트 버튼 아이템 프리펩 
+/// </summary>
 public class RouteButtonItem : MonoBehaviour
 {
     private string routeID;
@@ -9,6 +12,10 @@ public class RouteButtonItem : MonoBehaviour
     private string routeName;
 
     private string routeIndex; //루트 버튼 고유 번호
+
+    [SerializeField]
+    GameObject checkImage;
+
 
     Button routeButton;
 
@@ -33,11 +40,19 @@ public class RouteButtonItem : MonoBehaviour
 
     }
 
+    public void CheckButtonActive()
+    {
+        checkImage.gameObject.SetActive(true);
+        routeButton.interactable = false;
+    }
+
     public void ColorGrayButton()
     {
         ColorBlock cb = routeButton.colors;
         cb.disabledColor = Color.grey;
         routeButton.colors = cb;
+
+        routeButton.interactable = false;
     }
 
     public void ColorWhiteButton()
@@ -45,5 +60,7 @@ public class RouteButtonItem : MonoBehaviour
         ColorBlock cb = routeButton.colors;
         cb.disabledColor = Color.white;
         routeButton.colors = cb;
+
+        routeButton.interactable = true;
     }
 }
