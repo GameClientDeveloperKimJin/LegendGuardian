@@ -6,6 +6,9 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static Unity.Burst.Intrinsics.X86.Avx;
 
+/// <summary>
+/// 타이틀 씬에 있는 인증 관련 캔버스 UI 관리
+/// </summary>
 public class TitleSceneUIController : MonoBehaviour
 {
     [Header("로그인 관련")]

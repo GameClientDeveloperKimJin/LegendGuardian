@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// 선생님이 학생의 미션 승인 요청을 실시간으로 확인
+/// </summary>
 public class TeacherApprovalView : MonoBehaviour
 {
     [SerializeField]

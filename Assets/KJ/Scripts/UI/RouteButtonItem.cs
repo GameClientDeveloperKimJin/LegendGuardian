@@ -2,6 +2,9 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 메인 씬에 있는 루트 버튼 아이템 프리펩 
+/// </summary>
 public class RouteButtonItem : MonoBehaviour
 {
     private string routeID;

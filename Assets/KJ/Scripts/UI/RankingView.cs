@@ -6,6 +6,10 @@ public class RankingData
     public string NickName;
     public long score; 
 }
+
+/// <summary>
+/// 랭킹 데이터 관리 및 랭킹 UI 연출 
+/// </summary>
 public class RankingView : MonoBehaviour
 {
     private void OnEnable()

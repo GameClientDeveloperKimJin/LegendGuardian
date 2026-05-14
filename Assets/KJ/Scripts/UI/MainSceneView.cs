@@ -26,6 +26,10 @@ public class MissionData
     public string MissionReward;
     public bool IsMissionClear;
 }
+
+/// <summary>
+/// 미션 UI 연출 및 미션 데이터 관리 (미션 
+/// </summary>
 public class MainSceneView : MonoBehaviour 
 {
     [Header("미션 UI 관련")]
@@ -127,7 +131,7 @@ public class MainSceneView : MonoBehaviour
 
     private async void OnRequestStatusChanged(string status)
     {
-        if (status == "pending") return;
+        if (status == "pending") return; 
 
         //string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
 
@@ -446,7 +450,7 @@ public class MainSceneView : MonoBehaviour
 
         teacherSendBtn.interactable = false;
 
-        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
+        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0]; //wls6189 
         string teamId = await AuthManager.Instance.GetUserTeamName();
 
         await FirebaseManager.Instance.ClearMyPendingRequest(studentPrefix);

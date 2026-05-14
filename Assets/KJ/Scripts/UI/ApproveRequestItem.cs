@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 승인 요청 UI 
+/// 승인 요청 아이템 프리펩 , UI 시각화
 /// </summary>
 public class ApproveRequestItem : MonoBehaviour
 {
@@ -35,7 +35,7 @@ public class ApproveRequestItem : MonoBehaviour
         approveButton.interactable = false;
         rejectButton.interactable = false;
 
-        await FirebaseManager.Instance.ApproveRequest(requestData.StudentPrefix);
+        await FirebaseManager.Instance.ApproveRequest(requestData.StudentPrefix); // wls6189
 
         Destroy(this.gameObject);
     }
