@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +14,9 @@ public class TeacherSceneController : MonoBehaviour
 
     [Header("Student Info Panel (Canvas_Student 내부 Cnavas_StudentInfo)")]
     [SerializeField] private GameObject studentInfoPanel;
+
+    [Header("Student Search")]
+    [SerializeField] private InputField searchInputField;
 
     [Header("Student List")]
     [SerializeField] private Transform studentListParent; // Grp_Middle
@@ -45,6 +49,8 @@ public class TeacherSceneController : MonoBehaviour
     private List<Dictionary<string, object>> cachedApprovals = new();
     private string currentFloorFilter = "all"; // "all", "floor1"~"floor4"
 
+    private List<Dictionary<string, object>> cachedStudents = new();
+
     private void Start()
     {
         LoadStudents();
@@ -62,6 +68,10 @@ public class TeacherSceneController : MonoBehaviour
         if (btnFloor3 != null) btnFloor3.onClick.AddListener(() => FilterByFloor("floor3"));
         if (btnFloor4 != null) btnFloor4.onClick.AddListener(() => FilterByFloor("floor4"));
 
+        // 검색 InputField 이벤트 등록
+        if (searchInputField != null)
+            searchInputField.onValueChanged.AddListener(OnSearchValueChanged);
+
         // 학생 상세 패널 초기 비활성화
         if (studentInfoPanel != null)
             studentInfoPanel.SetActive(false);
@@ -73,10 +83,14 @@ public class TeacherSceneController : MonoBehaviour
     {
         if (!FirebaseManager.Instance.IsConnect) return;
 
+        cachedStudents = await FirebaseManager.Instance.GetAllStudents();
+        DisplayStudents(cachedStudents);
+    }
+
+    private void DisplayStudents(List<Dictionary<string, object>> students)
+    {
         foreach (Transform child in studentListParent)
             Destroy(child.gameObject);
-
-        var students = await FirebaseManager.Instance.GetAllStudents();
 
         foreach (var student in students)
         {
@@ -84,6 +98,23 @@ public class TeacherSceneController : MonoBehaviour
             var listItem = item.GetComponent<StudentListItem>();
             listItem.Setup(student, ShowStudentInfo);
         }
+    }
+
+    private void OnSearchValueChanged(string searchText)
+    {
+        if (string.IsNullOrEmpty(searchText))
+        {
+            DisplayStudents(cachedStudents);
+            return;
+        }
+
+        var filtered = cachedStudents.FindAll(s =>
+        {
+            string nickname = s.ContainsKey("nickname") ? s["nickname"].ToString() : "";
+            return nickname.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+        });
+
+        DisplayStudents(filtered);
     }
 
     public void ShowStudentInfo(Dictionary<string, object> studentData)
@@ -110,6 +141,7 @@ public class TeacherSceneController : MonoBehaviour
 
     #region Approval List
 
+    
     public async void LoadPendingApprovals()
     {
         if (!FirebaseManager.Instance.IsConnect) return;

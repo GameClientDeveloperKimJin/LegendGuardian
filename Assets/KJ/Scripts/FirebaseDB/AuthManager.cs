@@ -251,6 +251,8 @@ public class AuthManager : MonoBehaviour
             data["role"] = "student";
         }
 
+        data["completedMissionCount"] = 0L;
+
         await docRef.SetAsync(data);
         Debug.Log($"FireStore users/{user.UserId} 저장 완료");
     }

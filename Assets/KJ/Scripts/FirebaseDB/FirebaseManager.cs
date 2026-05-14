@@ -350,23 +350,44 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         });
 
         await UpdateUserScore(studentEmail, reward);
+        await IncrementCompletedMissionCount(studentEmail);
         Debug.Log($"승인 완료: {docId}, 보상: {reward}");
+    }
+
+    /// <summary>
+    /// 유저의 완료 미션 수를 1 증가시킵니다
+    /// </summary>
+    public async Task IncrementCompletedMissionCount(string userEmail)
+    {
+        Query query = Firestore.Collection("users").WhereEqualTo("email", userEmail);
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        if (snapshot.Count > 0)
+        {
+            foreach (DocumentSnapshot doc in snapshot.Documents)
+            {
+                await doc.Reference.UpdateAsync("completedMissionCount", FieldValue.Increment(1));
+                return;
+            }
+        }
+
+        Debug.LogError($"{userEmail} 에 맞는 유저가 없습니다. (completedMissionCount)");
     }
 
     /// <summary>
     /// 승인 요청을 거절 처리합니다
     /// </summary>
-    public async Task RejectRequest(string docId)
-    {
-        DocumentReference docRef = Firestore.Collection("approvals").Document(docId);
-        await docRef.UpdateAsync(new Dictionary<string, object>
-        {
-            { "status", "rejected" },
-            { "reviewedAt", FieldValue.ServerTimestamp },
-            { "reviewedBy", AuthManager.Instance.LoginUserID ?? "teacher" }
-        });
-        Debug.Log($"거절 완료: {docId}");
-    }
+    // public async Task RejectRequest(string docId)
+    // {
+    //     DocumentReference docRef = Firestore.Collection("approvals").Document(docId);
+    //     await docRef.UpdateAsync(new Dictionary<string, object>
+    //     {
+    //         { "status", "rejected" },
+    //         { "reviewedAt", FieldValue.ServerTimestamp },
+    //         { "reviewedBy", AuthManager.Instance.LoginUserID ?? "teacher" }
+    //     });
+    //     Debug.Log($"거절 완료: {docId}");
+    // }
 
     /// <summary>
     /// 학생이 미션 완료 시 승인 요청을 생성합니다

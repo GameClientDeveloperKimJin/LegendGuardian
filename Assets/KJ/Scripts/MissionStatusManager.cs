@@ -5,30 +5,30 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// ¹Ì¼Ç ÇöÈ² ¸Å´ÏÀú
+/// ë¯¸ì…˜ í˜„í™© ë§¤ë‹ˆì €
 /// </summary>
 public class MissionStatusManager : MonoBehaviour
 {
     [SerializeField]
     private TeacherApprovalView teacherApprovalView;
 
-    //ÀüÃ¼ ÇĞ»ı
+    //ì „ì²´ í•™ìƒ
     [SerializeField]
     private TextMeshProUGUI allStudentTMP;
-    //½ÂÀÎ ´ë±â °Ç¼ö
+    //ìŠ¹ì¸ ëŒ€ê¸° ê±´ìˆ˜
     [SerializeField]
     private TextMeshProUGUI requestWaitTMP;
-    //Áö±ŞÇÑ ÃÑ wh
+    //ë³´ìƒì ìˆ˜ wh
     [SerializeField]
     private TextMeshProUGUI scoreTMP;
 
-    private int onlineStudentCount; //¿Â¶óÀÎ ÁßÀÎ ÇĞ»ı ¼ö 
+    private int onlineStudentCount; //ì˜¨ë¼ì¸ ì ‘ì† í•™ìƒ ìˆ˜
 
     private ListenerRegistration _listener;
 
     private async void Start()
     {
-        //½Ç½Ã°£À¸·Î ¿Â¶óÀÎ ÇĞ»ı ¼ö¸¦ ¾÷µ¥ÀÌÆ® ÇÏ±â À§ÇØ¼­ Listen() »ç¿ë
+        //ì‹¤ì‹œê°„ìœ¼ë¡œ ì˜¨ë¼ì¸ í•™ìƒ ìˆ˜ë¥¼ ì—…ë°ì´íŠ¸ í•˜ê¸° ìœ„í•´ì„œ Listen() ì‚¬ìš©
         _listener = FirebaseManager.Instance.Firestore.Collection("users").WhereEqualTo("role", "student").WhereEqualTo("isOnline", true)
           .Listen(snapshot =>
           {
@@ -37,7 +37,7 @@ public class MissionStatusManager : MonoBehaviour
     }
     private void OnEnable()
     {
-        StartCoroutine(DealyInstance()); 
+        StartCoroutine(DealyInstance());
     }
     private void OnDisable()
     {
@@ -45,7 +45,7 @@ public class MissionStatusManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ¼±»ı´Ô Å¬·¡½º °´Ã¼°¡ ÃÊ±âÈ­ µÉ ¶§±îÁö ´ë±â
+    /// í´ë˜ìŠ¤ì˜ ì „ì²´ê°€ ì´ˆê¸°í™” ë  ë•Œê¹Œì§€ ëŒ€ê¸°
     /// </summary>
     /// <returns></returns>
     private IEnumerator DealyInstance()
@@ -54,18 +54,18 @@ public class MissionStatusManager : MonoBehaviour
         while (true)
         {
             UpdateMissionStatus();
-            yield return new WaitForSeconds(1.5f); //1.5ÃÊ °£°İÀ¸·Î »óÅÂ ¾÷µ¥ÀÌÆ®
+            yield return new WaitForSeconds(1.5f); //1.5ì´ˆ ê°„ê²©ìœ¼ë¡œ í˜„í™© ì—…ë°ì´íŠ¸
         }
     }
 
     /// <summary>
-    /// »óÅÂ ¾÷µ«
+    /// í˜„í™© ê°±ì‹ 
     /// </summary>
     private void UpdateMissionStatus()
     {
-       
-        allStudentTMP.text = $"{onlineStudentCount}¸í";
-        requestWaitTMP.text = $"{teacherApprovalView.AllRequestCount}°Ç";
+
+        allStudentTMP.text = $"{onlineStudentCount}ëª…";
+        requestWaitTMP.text = $"{teacherApprovalView.AllRequestCount}ê±´";
 
         int score = 0;
 

@@ -149,6 +149,7 @@ public class MainSceneView : MonoBehaviour
                 long missionRewardValue = long.Parse(mission.MissionReward);
 
                 await FirebaseManager.Instance.UpdateUserScore(AuthManager.Instance?.LoginUserID, missionRewardValue);
+                await FirebaseManager.Instance.IncrementCompletedMissionCount(AuthManager.Instance?.LoginUserID);
 
             }
 
