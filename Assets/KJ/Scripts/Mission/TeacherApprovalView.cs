@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 /// <summary>
 /// 선생님이 학생의 미션 승인 요청을 실시간으로 확인
@@ -12,12 +14,15 @@ public class TeacherApprovalView : MonoBehaviour
     [SerializeField]
     private GameObject requestItemPrefab;
     [SerializeField]
-    private Transform requestItemContent;
+    private Transform requestItemAllContent, requestItemOutdoorContent, requestItem1FContent, requestItem2FContent, requestItem3FContent;
     [SerializeField]
     private TextMeshProUGUI emptyLabel;
 
-    private List<GameObject> spawnedItems = new();
-    private List<MissionRequestData> lastRequests = new();
+    private List<GameObject> spawnedAllIRequesttems = new(); //전체에 해당하는 요청 아이템 리스트
+    private List<GameObject> spawnedTypeRequestItems = new(); //루트 타입에 해당하는 요청 아이템 리스트
+
+    [SerializeField]
+    private TextMeshProUGUI requestItemAllTMP, requestItemOutDoorTMP,requestItem1FTMP, requestItem2FTMP , requestItem3FTMP;
 
     IEnumerator Start()
     {
@@ -31,25 +36,23 @@ public class TeacherApprovalView : MonoBehaviour
     {
         Debug.Log($"호출됨 Count: {requestDataList.Count}");
 
-        //if (IsSameRequests(requestDataList)) return;
-        //lastRequests = new List<MissionRequestData>(requestDataList);
-
         //emptyLabel.gameObject.SetActive(requestItemContent.childCount == 0);
 
 
         if (requestDataList.Count >  0)
         {
-            foreach (var item in spawnedItems)
-                Destroy(item);
+            ClearRequestItem();
 
+            RefreshCountTexts();
             Debug.Log("승인 요청 업데이트");
-            spawnedItems.Clear();
 
             foreach (var requestData in requestDataList)
             {
-                GameObject item = Instantiate(requestItemPrefab, requestItemContent);
-                item.GetComponent<ApproveRequestItem>().Init(requestData);
-                spawnedItems.Add(item);
+                GameObject item = Instantiate(requestItemPrefab, requestItemAllContent);
+                item.GetComponent<ApproveRequestItem>().Init(this,requestData);
+                spawnedAllIRequesttems.Add(item);
+
+                MissionType(requestData.StudentPrefix, requestData);
 
                 Debug.Log($"미션 보상: {requestData.MissionReward}");
             }
@@ -58,18 +61,92 @@ public class TeacherApprovalView : MonoBehaviour
         //emptyLabel.gameObject.SetActive(requestItemContent.childCount == 0);
     }
 
-    private bool IsSameRequests(List<MissionRequestData> newList)
+    /// <summary>
+    /// 미션 타입에 해당하는 루트 분리
+    /// </summary>
+    /// <param name="userID"></param>
+    /// <param name="requestData"></param>
+    private async void MissionType(string userID,MissionRequestData requestData) //@ 앞 부분에 해당하는 요청한 학생의 ID
     {
-        if (newList.Count != lastRequests.Count) return false;
+        string teamID = await FirebaseManager.Instance.GetUserIDToTeamID(userID);
 
-        for (int i = 0; i < newList.Count; i++)
+        Dictionary<string,List<string>> routeDic =  await FirebaseManager.Instance.GetRouteIDToMission(teamID);
+
+        foreach(var routes in routeDic)
         {
-            if (newList[i].StudentPrefix != lastRequests[i].StudentPrefix) return false;
-            if (newList[i].Status != lastRequests[i].Status) return false;
+            foreach (string routeMissionID in routes.Value) //
+            {
+                if(routeMissionID == requestData.MissionID) //루트 안에 있는 미션 ID와 요청한 미션 ID 일치 하는지 확인
+                {
+                    string routeName = routes.Key; //루트 이름
+
+                    RouteTypeRequestItem(routeName, requestData);
+                }
+            }
         }
-        return true;
     }
 
+    /// <summary>
+    /// 루트 타입에 따른 요청 아이템 생성
+    /// </summary>
+    private void RouteTypeRequestItem(string routeName,MissionRequestData requestData)
+    {
+        GameObject item = null;
+
+        switch (routeName)
+        {
+            case "outdoor":
+                item = Instantiate(requestItemPrefab, requestItemOutdoorContent);
+                break;
+            case "floor1":
+                item = Instantiate(requestItemPrefab, requestItem1FContent);
+                break;
+            case "floor2":
+                item = Instantiate(requestItemPrefab, requestItem2FContent);
+                break;
+            case "floor3":
+                item = Instantiate(requestItemPrefab, requestItem3FContent);
+                break;
+
+        }
+
+        item.GetComponent<ApproveRequestItem>().Init(this,requestData);
+        spawnedTypeRequestItems.Add(item);
+
+        RefreshCountTexts();
+    }
+
+    public void ClearRequestItem()
+    {
+        foreach (var item in spawnedAllIRequesttems)
+        {
+            Destroy(item);
+        }
+        foreach (var item in spawnedTypeRequestItems)
+        {
+            Destroy(item);
+        }
+
+        spawnedAllIRequesttems.Clear();
+        spawnedTypeRequestItems.Clear();
+
+        StartCoroutine(RefereshChildCountCor());
+    }
+
+    IEnumerator RefereshChildCountCor()
+    {
+        yield return null;
+
+        RefreshCountTexts();
+    }
+    private void RefreshCountTexts()
+    {
+        requestItemAllTMP.text = $"전체({requestItemAllContent.childCount})";
+        requestItemOutDoorTMP.text = $"야외({requestItemOutdoorContent.childCount})";
+        requestItem1FTMP.text = $"1층({requestItem1FContent.childCount})";
+        requestItem2FTMP.text = $"2층({requestItem2FContent.childCount})";
+        requestItem3FTMP.text = $"3층({requestItem3FContent.childCount})";
+    }
     private void OnDestroy()
     {
         FirebaseManager.Instance.StopListenPendingRequests();

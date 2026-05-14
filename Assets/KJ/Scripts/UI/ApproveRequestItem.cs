@@ -18,7 +18,7 @@ public class ApproveRequestItem : MonoBehaviour
 
     private MissionRequestData requestData; //미션 요청 데이터
 
-    public void Init(MissionRequestData requestData)
+    public void Init(TeacherApprovalView approvalView, MissionRequestData requestData)
     {
         this.requestData = requestData;
 
@@ -26,8 +26,16 @@ public class ApproveRequestItem : MonoBehaviour
         missionNameTMP.text = $"미션: {this.requestData.MissionName}";
         missionRewardTMP.text = $"보상: {this.requestData.MissionReward}";
 
-        approveButton.onClick.AddListener(OnApprove);
-        rejectButton.onClick.AddListener(OnReject);
+        approveButton.onClick.AddListener(() =>
+        {
+            OnApprove();
+            approvalView.ClearRequestItem();
+        });
+        rejectButton.onClick.AddListener(() =>
+        {
+            OnReject();
+            approvalView.ClearRequestItem();
+        });
     }
 
     private async void OnApprove()
@@ -36,8 +44,6 @@ public class ApproveRequestItem : MonoBehaviour
         rejectButton.interactable = false;
 
         await FirebaseManager.Instance.ApproveRequest(requestData.StudentPrefix); // wls6189
-
-        Destroy(this.gameObject);
     }
 
     private async void OnReject()
@@ -47,7 +53,6 @@ public class ApproveRequestItem : MonoBehaviour
 
         await FirebaseManager.Instance.RejectRequest(requestData.StudentPrefix);
 
-        Destroy(this.gameObject);
     }
 
     private void OnDestroy()
