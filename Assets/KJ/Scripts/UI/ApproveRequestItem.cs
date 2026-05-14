@@ -33,6 +33,8 @@ public class ApproveRequestItem : MonoBehaviour
         rejectButton.interactable = false;
 
         await FirebaseManager.Instance.ApproveRequest(requestData.StudentPrefix);
+
+        Destroy(this.gameObject);
     }
 
     private async void OnReject()
@@ -41,6 +43,14 @@ public class ApproveRequestItem : MonoBehaviour
         rejectButton.interactable = false;
 
         await FirebaseManager.Instance.RejectRequest(requestData.StudentPrefix);
+
+        Destroy(this.gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        approveButton.onClick.RemoveAllListeners();
+        rejectButton.onClick.RemoveAllListeners();
     }
 
 }

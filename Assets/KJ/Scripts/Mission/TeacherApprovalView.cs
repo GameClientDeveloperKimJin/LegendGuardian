@@ -11,9 +11,10 @@ public class TeacherApprovalView : MonoBehaviour
     [SerializeField]
     private Transform requestItemContent;
     [SerializeField]
-    private TextMeshProUGUI emptyLabel; // Ω¬¿Œ ªÛ≈¬ ≈ÿΩ∫∆Æ 
+    private TextMeshProUGUI emptyLabel;
 
     private List<GameObject> spawnedItems = new();
+    private List<MissionRequestData> lastRequests = new();
 
     IEnumerator Start()
     {
@@ -23,29 +24,32 @@ public class TeacherApprovalView : MonoBehaviour
         FirebaseManager.Instance.ListenPendingRequests(OnRequestUpdated);
     }
 
-    private List<MissionRequestData> lastRequests = new();
-
     private void OnRequestUpdated(List<MissionRequestData> requestDataList)
     {
-        if (IsSameRequests(requestDataList)) return;
+        Debug.Log($"Ìò∏Ï∂úÎê® Count: {requestDataList.Count}");
 
-        lastRequests = requestDataList;
+        //if (IsSameRequests(requestDataList)) return;
+        //lastRequests = new List<MissionRequestData>(requestDataList);
 
-        foreach (var item in spawnedItems)
-            Destroy(item);
-
-        Debug.Log("Ω¬¿Œ ø‰√ª æ˜µ•¿Ã∆Æ");
-        spawnedItems.Clear();
-
-        emptyLabel.gameObject.SetActive(requestDataList.Count == 0);
+        emptyLabel.gameObject.SetActive(requestItemContent.childCount == 0);
 
 
-        foreach (var requestData in requestDataList)
+        if (requestDataList.Count >  0)
         {
-            GameObject item = Instantiate(requestItemPrefab, requestItemContent);
-            item.GetComponent<ApproveRequestItem>().Init(requestData);
-            spawnedItems.Add(item);
+            foreach (var item in spawnedItems)
+                Destroy(item);
+
+            Debug.Log("ÏäπÏù∏ ÏöîÏ≤≠ ÏóÖÎç∞Ïù¥Ìä∏");
+            spawnedItems.Clear();
+
+            foreach (var requestData in requestDataList)
+            {
+                GameObject item = Instantiate(requestItemPrefab, requestItemContent);
+                item.GetComponent<ApproveRequestItem>().Init(requestData);
+                spawnedItems.Add(item);
+            }
         }
+      
     }
 
     private bool IsSameRequests(List<MissionRequestData> newList)
@@ -55,6 +59,7 @@ public class TeacherApprovalView : MonoBehaviour
         for (int i = 0; i < newList.Count; i++)
         {
             if (newList[i].StudentPrefix != lastRequests[i].StudentPrefix) return false;
+            if (newList[i].Status != lastRequests[i].Status) return false;
         }
         return true;
     }

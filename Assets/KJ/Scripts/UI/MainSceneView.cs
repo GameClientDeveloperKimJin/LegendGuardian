@@ -29,44 +29,44 @@ public class MissionData
 public class MainSceneView : MonoBehaviour 
 {
     [SerializeField]
-    Button routeButtonPrefab; //»ı¼ºÇÒ ¹öÆ° ÇÁ¸®Æé
+    Button routeButtonPrefab; 
 
     [SerializeField]
-    Transform routeButtonContent; //»ı¼ºÇÒ ¹öÆ°ÀÇ À§Ä¡
+    Transform routeButtonContent; 
 
 
     [SerializeField]
-    private GameObject missionImage; //¹Ì¼Ç UI
+    private GameObject missionCanvas; 
 
     [SerializeField]
-    private TextMeshProUGUI titleMapTMP; //¸Ê ¼³¸í
+    private TextMeshProUGUI titleMapTMP; 
 
     [SerializeField]
-    Image mapImage; //¸Ê ÀÌ¹ÌÁö
+    Image mapImage; 
 
     [SerializeField]
     Sprite outdoorMap, floorMap_1, floorMap_2, floorMap_3;
 
     [SerializeField]
-    private TextMeshProUGUI missionTitleTMP; //¹Ì¼Ç Á¦¸ñ
+    private TextMeshProUGUI missionTitleTMP; 
 
     [SerializeField]
-    private TextMeshProUGUI missionDetailTMP; //¹Ì¼Ç ³»¿ë
+    private TextMeshProUGUI missionDetailTMP; 
 
     [SerializeField]
-    private TextMeshProUGUI rewardTMP; //¹Ì¼Ç º¸»ó
+    private TextMeshProUGUI rewardTMP; 
 
     Button[] routeButtons;
 
-    private Dictionary<string, MissionData> missionDic = new(); //¹Ì¼Ç ID : ¹Ì¼Ç µ¥ÀÌÅÍ = Å° : °ª
+    private Dictionary<string, MissionData> missionDic = new(); //ë¯¸ì…˜ ID : ë¯¸ì…˜ ë°ì´í„°
 
-    Dictionary<string, List<string>> routeMissionDic = new(); //·çÆ® ID : ¹Ì¼Ç ¸®½ºÆ® = Å° : °ª
+    Dictionary<string, List<string>> routeMissionDic = new(); //ë£¨íŠ¸ ID : ë¯¸ì…˜ IDë¦¬ìŠ¤íŠ¸
 
     private string currentRouteID;
 
     private string currentMissionID;
 
-    public MissionMapClearType MissionClearType { get; private set; } = MissionMapClearType.None; //ÃÊ±â°ª: ¹Ì Å¬¸®¾î »óÅÂ
+    public MissionMapClearType MissionClearType { get; private set; } = MissionMapClearType.None; 
 
     public static Action<QuizArea> OnQuizStarted;
 
@@ -79,11 +79,10 @@ public class MainSceneView : MonoBehaviour
     }
 
     /// <summary>
-    /// ¸ŞÀÎ ¾À ÀüÈ¯ ½Ã, ÃÊ±âÈ­ ÇÒ ³»¿ë ( 1È¸¼º)
+    /// ì´ˆê¸°í™”
     /// </summary>
     private async void Init()
     {
-        // ÆÀ¿¡ ¸Â´Â ·çÆ® ¹öÆ° µ¿Àû »ı¼º
         string teamID = await AuthManager.Instance.GetUserTeamName();
 
         var (routesID,routesName) = await FirebaseManager.Instance.GetTeamIDToRoutes(teamID);
@@ -95,11 +94,11 @@ public class MainSceneView : MonoBehaviour
             routeButtons[i] = Instantiate(routeButtonPrefab, routeButtonContent);
             routeButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = routesName[i];
 
-            routeButtons[i].GetComponent<RouteButtonItem>().Init(i,routesID[i], routesName[i]); //¹öÆ° ÀÎµ¦½º ¹øÈ£, ·çÆ® ID , ·çÆ® ³×ÀÓ
+            routeButtons[i].GetComponent<RouteButtonItem>().Init(i,routesID[i], routesName[i]); //ì¸ë±ìŠ¤ë²ˆí˜¸, ë£¨íŠ¸ID, ë£¨íŠ¸ ì´ë¦„ 
 
             await OnMissionDataSet(teamID, routesID[i]);
 
-            int captureIndex = i; //Å¬·ÎÀú ¹®Á¦
+            int captureIndex = i; //í´ë¡œì € ë¬¸ì œ 
 
             routeButtons[i].onClick.AddListener(() => OnMissionButtonClicked(routesID[captureIndex]) );
         }
@@ -128,20 +127,79 @@ public class MainSceneView : MonoBehaviour
         );
 
         FirebaseManager.Instance.ListenMyRequest(studentPrefix, OnRequestStatusChanged);
+
+        StartCoroutine(LoadingTMP(currentMissionID));
+    }
+    [SerializeField]
+    int loadingMaxCount = 3; 
+
+    [SerializeField]
+    GameObject waitCanvas;
+
+    [SerializeField]
+    TextMeshProUGUI LodingTMP;
+
+    IEnumerator LoadingTMP(string missionID)
+    {
+        if(!missionDic.TryGetValue(missionID, out var data))
+        {
+            yield break;
+        }
+
+        missionCanvas.gameObject.SetActive(false);
+        waitCanvas.gameObject.SetActive(true);
+
+        LodingTMP.text = "";
+
+        int currentLoadingCount = 0;
+
+        
+
+        while (!data.IsMissionClear)
+        {
+            currentLoadingCount++;
+
+            if (currentLoadingCount > loadingMaxCount)
+            {
+                currentLoadingCount = 0;
+                LodingTMP.text = "";
+            }
+            else
+            {
+                string tmp = new string('.', currentLoadingCount);
+
+                LodingTMP.text = tmp;
+            }
+
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        teacherSendBtn.interactable = true;
+        waitCanvas.gameObject.SetActive(false);
     }
 
     private async void OnRequestStatusChanged(string status)
     {
-        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
+        if (status == "pending") return;
+
+        //string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
 
         FirebaseManager.Instance.StopListenMyRequest();
 
-        await FirebaseManager.Instance.DeleteMissionRequest(studentPrefix);
+       // await FirebaseManager.Instance.DeleteMissionRequest(studentPrefix);
 
         if (status == "approved")
         {
             if (missionDic.TryGetValue(currentMissionID, out MissionData mission))
+            {
                 mission.IsMissionClear = true;
+
+                //ë³´ìƒ ì§€ê¸‰
+                long missionRewardValue = long.Parse(mission.MissionReward);
+
+                await FirebaseManager.Instance.UpdateUserScore(AuthManager.Instance?.LoginUserID, missionRewardValue);
+
+            }
 
             AllMissionClear();
         }
@@ -149,8 +207,9 @@ public class MainSceneView : MonoBehaviour
         teacherSendBtn.interactable = true;
     }
 
+
     /// <summary>
-    /// ÇöÀç ·çÆ®¸¦ ÇÊÅÍ¸µÇÏ¿© ¹Ì¼Ç µ¥ÀÌÅÍ ¼¼ÆÃ
+    /// ë¯¸ì…˜ ë°ì´í„° 1íšŒ ì„¤ì •
     /// </summary>
     /// <param name="teamID"></param>
     /// <param name="routeID"></param>
@@ -180,7 +239,7 @@ public class MainSceneView : MonoBehaviour
 
 
     /// <summary>
-    /// ·ÎÄÃ µ¥ÀÌÅÍ·Î ¹Ì¼Ç µ¥ÀÌÅÍµéÀ» ÀúÀå
+    /// ë¯¸ì…˜ ë”•ì…”ë„ˆë¦¬ ë°ì´í„° ì„¤ì •
     /// </summary>
     /// <param name="routeID"></param>
     private async Task OnMissionData(string routeID,List<string> missionList)
@@ -231,7 +290,7 @@ public class MainSceneView : MonoBehaviour
 
 
     /// <summary>
-    /// ¹Ì¼Ç UI È°¼ºÈ­ -> µ¥ÀÌÅÍ Àû¿ë
+    /// ë¯¸ì…˜ ui í™œì„±í™”
     /// </summary>
     /// <param name="routeID"></param>
     /// <param name="missionList"></param>
@@ -251,33 +310,32 @@ public class MainSceneView : MonoBehaviour
 
             currentMissionID = missionID;
 
-            missionImage.gameObject.SetActive(true);
+            missionCanvas.gameObject.SetActive(true);
 
             if (routeID == MissionMapType.outdoor.ToString())
             {
-                titleMapTMP.text = $"ÇöÀç À§Ä¡ ¾ß¿Ü ¹ßÀü¼Ò";
+                titleMapTMP.text = $"í˜„ì¬ ìœ„ì¹˜ ì•¼ì™¸";
                 mapImage.sprite = outdoorMap;
             }
             if (routeID == MissionMapType.floor1.ToString())
             {
-                titleMapTMP.text = $"ÇöÀç À§Ä¡ 1Ãş";
+                titleMapTMP.text = $"í˜„ì¬ ìœ„ì¹˜ 1ì¸µ";
                 mapImage.sprite = floorMap_1;
             }
 
             missionTitleTMP.text = missionDic[missionID].MissionName;
             missionDetailTMP.text = missionDic[missionID].MissionDetail;
-            rewardTMP.text = $"º¸»ó : {missionDic[missionID].MissionReward} wh";
+            rewardTMP.text = $"ë³´ìƒ : {missionDic[missionID].MissionReward} wh";
             return;
 
         }
     }
 
     /// <summary>
-    /// ·çÆ®¿¡ ¼ÓÇÑ ¹Ì¼ÇµéÀ» ¸ğµÎ Å¬¸®¾î ÇßÀ» ¶§ ·ÎÁ÷ ¹× ÆÇº°
+    /// ë¯¸ì…˜ í´ë¦¬ì–´ ì—¬ë¶€ ë° í€´ì¦ˆ ì‹œì‘
     /// </summary>
     private void AllMissionClear()
     {
-        //·çÆ®¿¡ ¼ÓÇÑ ¹Ì¼Ç ¿Ã Å¬¸®¾î ( À§ return ½ÇÇà ¾ÈµÆÀ» ¶§ )
         if (!routeMissionDic.TryGetValue(currentRouteID, out var missions)) return;
 
         bool allClear = true;
@@ -299,7 +357,7 @@ public class MainSceneView : MonoBehaviour
         MissionMapClearType currentType = MissionClearType;
         MissionMapClearType nextType = (MissionMapClearType)currentType + 1;
 
-        if (Enum.IsDefined(typeof(MissionMapClearType), nextType)) //MissionMapClearType ¾È¿¡ nextType °ªÀÌ Á¸ÀçÇÏ¸é true
+        if (Enum.IsDefined(typeof(MissionMapClearType), nextType)) //ë²”ìœ„ ì²´í¬
         {
             currentType = (MissionMapClearType)nextType;
             MissionClearType = currentType;
@@ -344,7 +402,7 @@ public class MainSceneView : MonoBehaviour
 
     private void OnGUI()
     {
-        if (GUILayout.Button("Ã¹¹øÂ° ¹Ì¼Ç °­Á¦ ¿Ï·á ½ÃÅ°±â"))
+        if (GUILayout.Button("1ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ"))
         {
             if (routeMissionDic.TryGetValue(currentRouteID,out var missions) && missionDic.ContainsKey(missions[0]))
             {
@@ -355,7 +413,7 @@ public class MainSceneView : MonoBehaviour
             }
 
         }
-        if (GUILayout.Button("µÎ¹øÂ° ¹Ì¼Ç °­Á¦ ¿Ï·á ½ÃÅ°±â"))
+        if (GUILayout.Button("2ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ"))
         {
             if (routeMissionDic.TryGetValue(currentRouteID, out var missions) && missionDic.ContainsKey(missions[1]))
             {
@@ -363,7 +421,7 @@ public class MainSceneView : MonoBehaviour
                 AllMissionClear();
             }
         }
-        if (GUILayout.Button("¼¼¹øÂ° ¹Ì¼Ç °­Á¦ ¿Ï·á ½ÃÅ°±â"))
+        if (GUILayout.Button("3ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ"))
         {
             if (routeMissionDic.TryGetValue(currentRouteID, out var missions) && missionDic.ContainsKey(missions[2]))
             {
@@ -373,78 +431,65 @@ public class MainSceneView : MonoBehaviour
         }
     }
 
-
+    #region ë¯¸ì…˜ ë²„íŠ¼
     /// <summary>
-    /// µÎ¹øÂ° ·çÆ® ¹öÆ° È°¼ºÈ­ 
+    /// 2ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ ì‹œ,
     /// </summary>
     public void OnSecondRouteButtonActive()
     {
         for (int i = 0; i < routeButtons.Length; i++)
         {
-            if (i == 0) //Ã¹¹øÂ° ¹öÆ°
+            if (i == 0) 
             {
                 routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
             }
-            if(i == 1) //2¹øÂ° ¹öÆ°
+            if(i == 1) 
             {
                 routeButtons[i].GetComponent<RouteButtonItem>().ColorWhiteButton();
             }
         }
-        //Ã¹¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã ,¹öÆ° Å¬¸¯ ºÒ°¡ 
-        //µÎ¹øÂ° ·çÆ® ¹öÆ° »ö»ó º¯°æ -> ±âÁ¸ È¸»ö¿¡¼­ Èò»öÀ¸·Î º¯°æ , ¹öÆ° Å¬¸¯ °¡´É 
-        //³ª¸ÓÁö ¹öÆ° -> ±âÁ¸ È¸»ö À¯Áö , ¹öÆ° Å¬¸¯ ºÒ°¡
     }
 
-    
+
     /// <summary>
-    /// ¼¼¹øÂ° ·çÆ® ¹öÆ° È°¼ºÈ­ 
+    /// 3ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ ì‹œ,
     /// </summary>
     public void OnThirdRouteButtonActive()
     {
         for (int i = 0; i < routeButtons.Length; i++)
         {
-            if (i == 0 || i == 1) //1,2¹øÂ° ¹öÆ°
+            if (i == 0 || i == 1) 
             {
                 routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
             }
-            if (i == 2) //3¹øÂ° ¹öÆ°
+            if (i == 2) 
             {
                 routeButtons[i].GetComponent<RouteButtonItem>().ColorWhiteButton();
             }
         }
-        //Ã¹¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡ 
-        //µÎ¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡
-
-        //¼¼¹øÂ° ·çÆ® ¹öÆ° »ö»ó º¯°æ -> ±âÁ¸ È¸»ö¿¡¼­ Èò»öÀ¸·Î º¯°æ , ¹öÆ° Å¬¸¯ °¡´É 
-
-        //³ª¸ÓÁö ¹öÆ° -> ±âÁ¸ È¸»ö À¯Áö , ¹öÆ° Å¬¸¯ ºÒ°¡
     }
 
 
     /// <summary>
-    /// ³×¹ø¤Š ·çÆ® ¹öÆ° È°¼ºÈ­ 
+    /// 4ë²ˆì§¸ ë¯¸ì…˜ ì™„ë£Œ ì‹œ,
     /// </summary>
     public void OnFourRouteButtonActive()
     {
         for (int i = 0; i < routeButtons.Length; i++)
         {
-            if (i == 0 || i == 1 || i == 2) //1,2,3 ¹øÂ° ¹öÆ°
+            if (i == 0 || i == 1 || i == 2) //1,2,3 
             {
                 routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
             }
-            if (i == 3) //4¹øÂ° ¹öÆ°
+            if (i == 3) 
             {
                 routeButtons[i].GetComponent<RouteButtonItem>().ColorWhiteButton();
             }
         }
-        //Ã¹¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡ 
-        //µÎ¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡
-        //¼¼¹øÂ° ·çÆ® ¹öÆ° -> Ã¼Å© Ç¥½Ã , ¹öÆ° Å¬¸¯ ºÒ°¡
 
-        //4¹øÂ° ·çÆ® ¹öÆ° »ö»ó º¯°æ -> ±âÁ¸ È¸»ö¿¡¼­ Èò»öÀ¸·Î º¯°æ , ¹öÆ° Å¬¸¯ °¡´É 
     }
-
-    private void OnDestroy()
+    #endregion
+    private async void OnDestroy()
     {
         teacherSendBtn.onClick.RemoveAllListeners();
 
@@ -452,6 +497,10 @@ public class MainSceneView : MonoBehaviour
         {
             routeButtons[i].onClick.RemoveAllListeners();
         }
+
+        string studentPrefix = AuthManager.Instance.LoginUserID.Split('@')[0];
+
+        await FirebaseManager.Instance.DeleteMissionRequest(studentPrefix);
 
         FirebaseManager.Instance?.StopListenMyRequest();
     }
