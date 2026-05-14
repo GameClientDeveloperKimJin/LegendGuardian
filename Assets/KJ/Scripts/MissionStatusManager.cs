@@ -1,3 +1,4 @@
+using Firebase.Firestore;
 using System;
 using System.Collections;
 using TMPro;
@@ -23,14 +24,26 @@ public class MissionStatusManager : MonoBehaviour
 
     private int onlineStudentCount; //온라인 중인 학생 수 
 
+    private ListenerRegistration _listener;
+
     private async void Start()
     {
-        //role이 student 이고, isOnline이 true인 학생만 필터링하여 users에 데이터 가져온다.
-        var snapshot = await FirebaseManager.Instance.Firestore.Collection("users").
-            WhereEqualTo("role", "student").WhereEqualTo("isOnline", true).GetSnapshotAsync();
-
-        onlineStudentCount = snapshot.Count;
+        //실시간으로 온라인 학생 수를 업데이트 하기 위해서 Listen() 사용
+        _listener = FirebaseManager.Instance.Firestore.Collection("users").WhereEqualTo("role", "student").WhereEqualTo("isOnline", true)
+          .Listen(snapshot =>
+          {
+              onlineStudentCount = snapshot.Count;
+          });
     }
+    private void OnEnable()
+    {
+        StartCoroutine(DealyInstance()); 
+    }
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+    }
+
     /// <summary>
     /// 선생님 클래스 객체가 초기화 될 때까지 대기
     /// </summary>
@@ -44,16 +57,6 @@ public class MissionStatusManager : MonoBehaviour
             yield return new WaitForSeconds(1.5f); //1.5초 간격으로 상태 업데이트
         }
     }
-
-    private void OnEnable()
-    {
-        StartCoroutine(DealyInstance()); 
-    }
-    private void OnDisable()
-    {
-        StopAllCoroutines();
-    }
-
 
     /// <summary>
     /// 상태 업뎃
