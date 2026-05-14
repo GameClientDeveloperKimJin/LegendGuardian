@@ -27,11 +27,9 @@ public class StudentListView : MonoBehaviour
 
     private List<Dictionary<string, object>> cachedStudents = new();
 
-    private IEnumerator Start()
+    private void Awake()
     {
-        yield return new WaitUntil(() => FirebaseManager.Instance != null);
-        yield return new WaitUntil(() => FirebaseManager.Instance.IsConnect);
-
+        // UI 리스너는 Firebase와 무관하므로 Awake에서 바로 등록
         if (searchInputField != null)
             searchInputField.onValueChanged.AddListener(OnSearchValueChanged);
 
@@ -40,6 +38,12 @@ public class StudentListView : MonoBehaviour
 
         if (canvasStudentInfo != null)
             canvasStudentInfo.SetActive(false);
+    }
+
+    private IEnumerator Start()
+    {
+        yield return new WaitUntil(() => FirebaseManager.Instance != null);
+        yield return new WaitUntil(() => FirebaseManager.Instance.IsConnect);
 
         LoadStudents();
     }
@@ -126,7 +130,11 @@ public class StudentListView : MonoBehaviour
 
     private void OnBackButton()
     {
-        canvasStudentInfo.SetActive(false);
+        Debug.Log("[StudentListView] OnBackButton 호출됨");
+        if (canvasStudentInfo != null)
+            canvasStudentInfo.SetActive(false);
+        else
+            Debug.LogWarning("[StudentListView] canvasStudentInfo가 null입니다!");
     }
 
     private void OnDestroy()
