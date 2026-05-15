@@ -35,7 +35,7 @@ public class RewardItem : MonoBehaviour
 
             if(currentScore >= rewardSO.RequiredScore) //교환 조건
             {
-                ScoreManager.Instance.AddScore(-rewardSO.RequiredScore); //점수 차감
+                ScoreManager.Instance.TrySpendScore(rewardSO.RequiredScore); //점수 차감
 
                 OnExchangeded?.Invoke();
 
@@ -45,6 +45,9 @@ public class RewardItem : MonoBehaviour
                     studentPrefix,
                     AuthManager.Instance?.LoginUserName,
                     rewardSO.RewardName);
+
+                exchangeBtn.interactable = false;
+                exchangeBtn.GetComponentInChildren<TextMeshProUGUI>().text = "완료";
             }
             else
             {

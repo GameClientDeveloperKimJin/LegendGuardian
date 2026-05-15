@@ -8,6 +8,8 @@ public class RewardResultData
     public string RewardStudentID; //보상 받은 학생 id
     public string RewardStudentName; //보상 받은 학생 이름
     public string RewardName; //보상 이름
+
+    public long Count; //보상 개수
 }
 public class RewardView : MonoBehaviour
 {

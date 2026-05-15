@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 using Query = Firebase.Firestore.Query;
 
 public class FirebaseManager : MonoBehaviour, IDisposable
@@ -495,16 +496,16 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     /// <returns></returns>
     public async Task RewardResult(string studentPrefix, string studentName, string rewardedName)
     {
-
-        DatabaseReference reqRef = RealtimeDB.Child("rewardedUser").Child(studentPrefix);
+        DatabaseReference reqRef = RealtimeDB.Child("rewardedUser").Child($"{studentPrefix}_{rewardedName}");
 
         await reqRef.OnDisconnect().RemoveValue();
 
-        await reqRef.SetValueAsync(new System.Collections.Generic.Dictionary<string, object>
+        await reqRef.SetValueAsync(new Dictionary<string, object>
         {
-            ["rewardedStudentID"] = studentPrefix, //보상 받은 학생 ID
-            ["rewardedStudentName"] = studentName, //보상 받은 학생 이름
-            ["rewardedName"] = rewardedName, //보상 받았던 이름
+            ["rewardedStudentID"] = studentPrefix,
+            ["rewardedStudentName"] = studentName,
+            ["rewardedName"] = rewardedName,
+
         });
     }
 
@@ -539,7 +540,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
             {
                 requests.Add(new RewardResultData
                 {
-                    RewardStudentID = child.Key,
+                    RewardStudentID = child.Child("rewardedStudentID").Value?.ToString() ?? "",
                     RewardStudentName = child.Child("rewardedStudentName").Value?.ToString() ?? "",
                     RewardName = child.Child("rewardedName").Value?.ToString() ?? "",
                 });
