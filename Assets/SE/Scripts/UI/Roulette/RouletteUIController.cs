@@ -180,6 +180,8 @@ public class RouletteUIController : MonoBehaviour
         {
             StartCoroutine(FadeOutWhiteOverlayAfterResult());
         }
+
+        AuthManager.Instance?.FixedTeam();
     }
 
 

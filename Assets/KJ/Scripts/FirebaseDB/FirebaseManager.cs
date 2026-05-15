@@ -470,6 +470,95 @@ public class FirebaseManager : MonoBehaviour, IDisposable
             Debug.LogError($"UnListenTeamStatus 오류: {e.Message}");
         }
     }
+
+    /// <summary>
+    /// 해당 유저가 팀이 있는지 없는지 확인
+    /// </summary>
+    /// <returns></returns>
+    public async Task<bool> IsTeam(string uid)
+    {
+        DocumentSnapshot snapShot = await FirebaseManager.Instance.Firestore.Collection("users").Document(uid).GetSnapshotAsync();
+
+        bool isFirstTeamSsetup = snapShot.TryGetValue("isFirstTeamSetup", out bool value) && value;
+
+        return isFirstTeamSsetup;
+    }
+    #endregion
+
+    #region 보상 처리 결과
+    /// <summary>
+    /// 보상 처리 결과를 RealtimeDB에 저장
+    /// </summary>
+    /// <param name="studentPrefix"></param>
+    /// <param name="studentName"></param>
+    /// <param name="rewardedName"></param>
+    /// <returns></returns>
+    public async Task RewardResult(string studentPrefix, string studentName, string rewardedName)
+    {
+
+        DatabaseReference reqRef = RealtimeDB.Child("rewardedUser").Child(studentPrefix);
+
+        await reqRef.OnDisconnect().RemoveValue();
+
+        await reqRef.SetValueAsync(new System.Collections.Generic.Dictionary<string, object>
+        {
+            ["rewardedStudentID"] = studentPrefix, //보상 받은 학생 ID
+            ["rewardedStudentName"] = studentName, //보상 받은 학생 이름
+            ["rewardedName"] = rewardedName, //보상 받았던 이름
+        });
+    }
+
+    private DatabaseReference rewardResultRef;
+    private EventHandler<ValueChangedEventArgs> rewardResultHandler;
+
+    /// <summary>
+    /// 선생님이 보상 처리 결과를 감지
+    /// </summary>
+    /// <param name="onChanged"></param>
+    public void ListenRewardReslt (Action<List<RewardResultData>> onChanged)
+    {
+        rewardResultRef = RealtimeDB.Child("rewardedUser");
+
+        rewardResultHandler = (sender, args) =>
+        {
+            if (args.DatabaseError != null)
+            {
+                Debug.LogError($"미션 요청 감지 오류: {args.DatabaseError.Message}");
+                return;
+            }
+
+            List<RewardResultData> requests = new();
+
+            if (args.Snapshot.Value == null)
+            {
+                onChanged?.Invoke(requests);
+                return;
+            }
+
+            foreach (Firebase.Database.DataSnapshot child in args.Snapshot.Children)
+            {
+                requests.Add(new RewardResultData
+                {
+                    RewardStudentID = child.Key,
+                    RewardStudentName = child.Child("rewardedStudentName").Value?.ToString() ?? "",
+                    RewardName = child.Child("rewardedName").Value?.ToString() ?? "",
+                });
+            }
+
+            onChanged?.Invoke(requests);
+        };
+
+        rewardResultRef.ValueChanged += rewardResultHandler;
+    }
+    public void StopListenRewardResult()
+    {
+        if (rewardResultRef != null)
+        {
+            rewardResultRef.ValueChanged -= rewardResultHandler;
+            rewardResultRef = null;
+        }
+        rewardResultHandler = null;
+    }
     #endregion
 
     #region 미션 요청/수락
