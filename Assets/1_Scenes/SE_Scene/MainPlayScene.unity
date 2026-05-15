@@ -2844,7 +2844,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvasesToShow:
   - {fileID: 370252617}
-  canvasesToHide: []
+  canvasesToHide:
+  - {fileID: 1402396519}
 --- !u!1 &622239833
 GameObject:
   m_ObjectHideFlags: 0
@@ -3802,6 +3803,7 @@ MonoBehaviour:
   hintButton: {fileID: 1401947717}
   nextButton: {fileID: 1724666168}
   hintText: {fileID: 2023117545}
+  quizCanvas: {fileID: 643625265}
 --- !u!1 &854512418
 GameObject:
   m_ObjectHideFlags: 0

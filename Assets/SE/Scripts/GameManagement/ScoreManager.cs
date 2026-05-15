@@ -46,19 +46,22 @@ public class ScoreManager : MonoBehaviour
         UpdateAllUI();
     }
 
-    // 점수 추가 + Firebase 저장
+    // 점수 추가 + Firebase 누적 저장
     public async void AddScore(int amount)
     {
-        currentScore = Mathf.Max(0, currentScore + amount);
+        if (amount <= 0)
+            return;
 
+        currentScore = Mathf.Max(0, currentScore + amount);
         UpdateAllUI();
 
         if (FirebaseManager.Instance != null &&
-            AuthManager.Instance != null)
+            AuthManager.Instance != null &&
+            !string.IsNullOrEmpty(AuthManager.Instance.LoginUserID))
         {
             await FirebaseManager.Instance.UpdateUserScore(
                 AuthManager.Instance.LoginUserID,
-                currentScore
+                amount
             );
         }
     }
@@ -76,22 +79,25 @@ public class ScoreManager : MonoBehaviour
         UpdateAllUI();
     }
 
-    // 점수 사용 + Firebase 저장
+    // 점수 사용 + Firebase 차감 저장
     public bool TrySpendScore(int amount)
     {
+        if (amount <= 0)
+            return false;
+
         if (currentScore < amount)
             return false;
 
         currentScore -= amount;
-
         UpdateAllUI();
 
         if (FirebaseManager.Instance != null &&
-            AuthManager.Instance != null)
+            AuthManager.Instance != null &&
+            !string.IsNullOrEmpty(AuthManager.Instance.LoginUserID))
         {
             _ = FirebaseManager.Instance.UpdateUserScore(
                 AuthManager.Instance.LoginUserID,
-                currentScore
+                -amount
             );
         }
 
