@@ -39,6 +39,12 @@ public class QuizSceneManager : MonoBehaviour
     [Header("힌트 텍스트")]
     [SerializeField] private TMP_Text hintText;
 
+    [Header("퀴즈 캔버스")]
+    [SerializeField] private GameObject quizCanvas;
+
+    [Header("퀴즈 보상")]
+    [SerializeField] private int correctAnswerReward = 3;
+
     private QuizSet currentQuizSet;
     private int currentQuestionIndex = 0;
 
@@ -127,7 +133,7 @@ public class QuizSceneManager : MonoBehaviour
             // 점수 +3
             if (ScoreManager.Instance != null)
             {
-                ScoreManager.Instance.AddScore(3);
+                ScoreManager.Instance.AddScore(correctAnswerReward);
             }
 
             Debug.Log("정답입니다!");
@@ -140,6 +146,15 @@ public class QuizSceneManager : MonoBehaviour
 
         UpdateResultImage();
         UpdateOptionButtons();
+
+        if (currentQuestionIndex == currentQuizSet.questions.Length - 1)
+        {
+            if (quizCanvas != null)
+            {
+                quizCanvas.SetActive(false);
+            }
+        }
+
     }
 
     private void UpdateResultImage()

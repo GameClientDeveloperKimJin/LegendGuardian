@@ -1813,7 +1813,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee85a4e7bab18cf459f8b798e205acbe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  quizSet: {fileID: 11400000, guid: 894f1871b39fb534fb0e4ed1d3fa231b, type: 2}
+  outsideQuizSet: {fileID: 11400000, guid: 894f1871b39fb534fb0e4ed1d3fa231b, type: 2}
+  floor1QuizSet: {fileID: 11400000, guid: b928dfe4758a4a94a974f5e03efc7649, type: 2}
+  floor2QuizSet: {fileID: 11400000, guid: 758712293bffc7744bf9ff57991dd350, type: 2}
+  floor3QuizSet: {fileID: 11400000, guid: 3a06ac704569dc34db8b4f9054206a69, type: 2}
   questionImage: {fileID: 310627773}
   questionText: {fileID: 75745100}
   optionButtons:

@@ -91,7 +91,7 @@ public class ScoreUIController : MonoBehaviour
         if (ScoreManager.Instance == null)
             return;
 
-        ScoreManager.Instance.SetScore((int)score);
+        StartCoroutine(LoadCurrentScoreCoroutine());
     }
 
     public void UpdateUI(int currentScore, int maxScore, float normalizedScore)
