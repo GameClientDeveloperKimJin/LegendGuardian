@@ -211,6 +211,15 @@ public class AuthManager : MonoBehaviour
     {
         try
         {
+
+            string uid = FirebaseManager.Instance.Auth.CurrentUser.UserId; // UID 사용
+
+            if(!string.IsNullOrEmpty(uid))
+            {
+                await FirebaseManager.Instance.Firestore.Collection("users").Document(uid).UpdateAsync("isOnline", false);
+            }
+
+
             FirebaseManager.Instance?.Auth?.SignOut();
             RemoveTeamListener();
 
@@ -250,6 +259,8 @@ public class AuthManager : MonoBehaviour
         {
             data["role"] = "student";
         }
+
+        data["completedMissionCount"] = 0L;
 
         await docRef.SetAsync(data);
         Debug.Log($"FireStore users/{user.UserId} 저장 완료");
