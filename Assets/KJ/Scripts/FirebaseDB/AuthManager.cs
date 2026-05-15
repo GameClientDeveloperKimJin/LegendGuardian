@@ -222,12 +222,7 @@ public class AuthManager : MonoBehaviour
         try
         {
 
-            string uid = FirebaseManager.Instance.Auth.CurrentUser.UserId; // UID 사용
-
-            if(!string.IsNullOrEmpty(uid))
-            {
-                await FirebaseManager.Instance.Firestore.Collection("users").Document(uid).UpdateAsync("isOnline", false);
-            }
+            SetOnlineStatus(false);
 
 
             FirebaseManager.Instance?.Auth?.SignOut();
@@ -241,6 +236,30 @@ public class AuthManager : MonoBehaviour
         }
     }
 
+    private void OnApplicationPause(bool pause)
+    {
+        if (pause)
+        {
+            // 로그아웃 X, isOnline 상태만 변경
+            SetOnlineStatus(false);
+        }
+        else
+        {
+            // 복귀 시 다시 온라인
+            SetOnlineStatus(true);
+        }
+    }
+
+    private async void SetOnlineStatus(bool isOnline)
+    {
+        string uid = FirebaseManager.Instance.Auth.CurrentUser?.UserId;
+        if (!string.IsNullOrEmpty(uid))
+        {
+            await FirebaseManager.Instance.Firestore
+                .Collection("users").Document(uid)
+                .UpdateAsync("isOnline", isOnline);
+        }
+    }
     #endregion
 
 
