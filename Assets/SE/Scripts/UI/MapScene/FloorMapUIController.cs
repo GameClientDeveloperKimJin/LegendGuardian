@@ -13,13 +13,20 @@ public class FloorMapUIController : MonoBehaviour
     [Header("Map Image")]
     [SerializeField] private Image mapImage;
 
+    [Header("Default Outdoor Sprite")]
+    [SerializeField] private Sprite defaultOutdoorSprite;
+
     [Header("Floor Data")]
     [SerializeField] private FloorMapData[] floorMapDataList;
 
     private void Awake()
     {
-        if (mapImage != null)
-            mapImage.gameObject.SetActive(false);
+        // 처음 시작 시 맵 표시
+        if (mapImage != null && defaultOutdoorSprite != null)
+        {
+            mapImage.sprite = defaultOutdoorSprite;
+            mapImage.gameObject.SetActive(true);
+        }
 
         BindButtons();
     }

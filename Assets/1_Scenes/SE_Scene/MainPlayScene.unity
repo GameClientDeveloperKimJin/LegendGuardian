@@ -3804,6 +3804,7 @@ MonoBehaviour:
   nextButton: {fileID: 1724666168}
   hintText: {fileID: 2023117545}
   quizCanvas: {fileID: 643625265}
+  correctAnswerReward: 3
 --- !u!1 &854512418
 GameObject:
   m_ObjectHideFlags: 0
@@ -5523,6 +5524,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapImage: {fileID: 1418550080}
+  defaultOutdoorSprite: {fileID: 21300000, guid: 5bcaafbaf713d964390bec27d8e1fd71, type: 3}
   floorMapDataList:
   - button: {fileID: 863801735}
     mapSprite: {fileID: 21300000, guid: 5bcaafbaf713d964390bec27d8e1fd71, type: 3}
