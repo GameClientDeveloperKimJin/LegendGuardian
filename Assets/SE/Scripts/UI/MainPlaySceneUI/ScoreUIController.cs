@@ -154,22 +154,22 @@ public class ScoreUIController : MonoBehaviour
 
         if (maxScore <= 0)
         {
-            SetEmon(currentElementData.eggSprite, "��");
+            SetEmon(currentElementData.eggSprite, "알");
             return;
         }
 
         float step = maxScore / 4f;
 
         if (score >= maxScore)
-            SetEmon(currentElementData.finalSprite, "����");
+            SetEmon(currentElementData.finalSprite, "최종 진화");
         else if (score >= step * 3f)
-            SetEmon(currentElementData.adultSprite, "��ü");
+            SetEmon(currentElementData.adultSprite, "성체");
         else if (score >= step * 2f)
-            SetEmon(currentElementData.growthSprite, "�����");
+            SetEmon(currentElementData.growthSprite, "성장기");
         else if (score >= step)
-            SetEmon(currentElementData.hatchSprite, "��ȭ");
+            SetEmon(currentElementData.hatchSprite, "부화");
         else
-            SetEmon(currentElementData.eggSprite, "��");
+            SetEmon(currentElementData.eggSprite, "알");
     }
 
     private void SetEmon(Sprite sprite, string state)

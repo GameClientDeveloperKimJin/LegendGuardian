@@ -213,6 +213,11 @@ public class TitleSceneUIController : MonoBehaviour
 
         while(!authManager.IsTeamReady)
         {
+            if(authManager.IsSkip)
+            {
+                SceneManager.LoadScene("KJ_MainPlayScene");
+                yield break;
+            }
             currentLoadingCount++;
 
             if (currentLoadingCount > loadingMaxCount)

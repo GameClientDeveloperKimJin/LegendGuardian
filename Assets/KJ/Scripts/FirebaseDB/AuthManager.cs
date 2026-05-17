@@ -54,6 +54,7 @@ public class AuthManager : MonoBehaviour
     public string LoginUserName { get; private set; }
 
     public bool IsTeamReady { get; private set; }
+    public bool IsSkip { get; private set; }
 
     public Dictionary<string, UserData> userDictionary = new();
 
@@ -182,7 +183,16 @@ public class AuthManager : MonoBehaviour
 
             Debug.Log($"로그인 성공 - 로그인 한 ID : {result.User.Email}");
 
-            AddTeamListener();
+            bool IsStatus = await FirebaseManager.Instance.IsTeam(result.User.UserId);
+
+            if (IsStatus)
+            {
+                IsSkip = true;
+            }
+            else
+            {
+                AddTeamListener();
+            }
 
             return (true, null); // true : 성공 , null : 에러 없음
         }
@@ -212,12 +222,7 @@ public class AuthManager : MonoBehaviour
         try
         {
 
-            string uid = FirebaseManager.Instance.Auth.CurrentUser.UserId; // UID 사용
-
-            if(!string.IsNullOrEmpty(uid))
-            {
-                await FirebaseManager.Instance.Firestore.Collection("users").Document(uid).UpdateAsync("isOnline", false);
-            }
+            SetOnlineStatus(false);
 
 
             FirebaseManager.Instance?.Auth?.SignOut();
@@ -231,6 +236,30 @@ public class AuthManager : MonoBehaviour
         }
     }
 
+    private void OnApplicationPause(bool pause)
+    {
+        if (pause)
+        {
+            // 로그아웃 X, isOnline 상태만 변경
+            SetOnlineStatus(false);
+        }
+        else
+        {
+            // 복귀 시 다시 온라인
+            SetOnlineStatus(true);
+        }
+    }
+
+    private async void SetOnlineStatus(bool isOnline)
+    {
+        string uid = FirebaseManager.Instance.Auth.CurrentUser?.UserId;
+        if (!string.IsNullOrEmpty(uid))
+        {
+            await FirebaseManager.Instance.Firestore
+                .Collection("users").Document(uid)
+                .UpdateAsync("isOnline", isOnline);
+        }
+    }
     #endregion
 
 
@@ -355,8 +384,18 @@ public class AuthManager : MonoBehaviour
                 Debug.Log($"팀 {userData.TeamID} 구성 완료! ");
                 userDictionary[cleanID]?.JoinTeam(userData.TeamID); //유저 데이터 클래스에 JoinTeam 호출해서 유저의 팀 ID를 로컬로 저장
                 IsTeamReady = true;
+
             }
         }
+    }
+
+    /// <summary>
+    /// 팀 확정 Data 변경
+    /// </summary>
+    public async void FixedTeam()
+    {
+        string uid = FirebaseManager.Instance.Auth.CurrentUser.UserId; // UID 사용
+        await FirebaseManager.Instance.Firestore.Collection("users").Document(uid).UpdateAsync("isFirstTeamSetup", true);
     }
 
     /// <summary>
