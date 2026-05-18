@@ -62,6 +62,8 @@ public class MainSceneView : MonoBehaviour
     Button routeButtonPrefab;
     [SerializeField]
     Button teacherSendBtn;
+    [SerializeField]
+    private Button LogOutBtn;
 
     [Header("연출 관련")]
     [SerializeField]
@@ -90,8 +92,6 @@ public class MainSceneView : MonoBehaviour
     [SerializeField]
     int loadingMaxCount = 3;
 
-    [SerializeField]
-    private Button LogOutBtn;
     private IEnumerator Start()
     {
         yield return new WaitUntil(() => AuthManager.Instance != null);

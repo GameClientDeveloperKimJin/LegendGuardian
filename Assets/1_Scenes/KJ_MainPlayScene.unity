@@ -3230,11 +3230,11 @@ MonoBehaviour:
   rewardTMP: {fileID: 802203394}
   routeButtonPrefab: {fileID: 8863580806556657873, guid: 42a5fe85b3666bc438010e85a58a1857, type: 3}
   teacherSendBtn: {fileID: 1966423534}
+  LogOutBtn: {fileID: 1059453535}
   waitCanvas: {fileID: 382458490}
   LodingTMP: {fileID: 269213158}
   quizeCanvas: {fileID: 262022645}
   loadingMaxCount: 3
-  LogOutBtn: {fileID: 1059453535}
 --- !u!1 &413434906
 GameObject:
   m_ObjectHideFlags: 0
