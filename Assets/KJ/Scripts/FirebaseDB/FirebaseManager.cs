@@ -568,7 +568,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     // ──────────────────────────────────────────
     public async Task SendMissionApprovalRequest(
         string studentPrefix, string studentId, string studentName,
-        string teamId, string missionId, string missionName, string missionReward, string routeId)
+        string teamId, string missionId, string missionName, long missionReward, string routeId)
     {
         Debug.Log(missionReward);
 
