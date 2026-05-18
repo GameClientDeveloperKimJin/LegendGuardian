@@ -376,6 +376,22 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     }
 
     /// <summary>
+    /// 유저가 현재 로그인 중인지 여부 반환
+    /// </summary>
+    /// <param name="userID"></param>
+    /// <returns></returns>
+    public async Task<bool> GetIsExitUser(string userID)
+    {
+        Query query = Firestore.Collection("users").WhereEqualTo("email", userID);
+        QuerySnapshot snapshot = await query.GetSnapshotAsync();
+
+        if (snapshot.Count == 0) return false;
+
+        DocumentSnapshot doc = snapshot.Documents.First();
+        return doc.TryGetValue("isOnline", out bool isOnline) && isOnline;
+    }
+
+    /// <summary>
     /// 승인 요청을 거절 처리합니다
     /// </summary>
     // public async Task RejectRequest(string docId)

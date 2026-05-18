@@ -18,7 +18,7 @@ public class ApproveRequestItem : MonoBehaviour
 
     private MissionRequestData requestData; //미션 요청 데이터
 
-    public void Init(TeacherApprovalView approvalView, MissionRequestData requestData)
+    public  void Init(TeacherApprovalView approvalView, MissionRequestData requestData)
     {
         this.requestData = requestData;
 
@@ -27,16 +27,33 @@ public class ApproveRequestItem : MonoBehaviour
         missionRewardTMP.text = $"보상: {this.requestData.MissionReward}";
 
         //승인 버튼
-        approveButton.onClick.AddListener(() =>
+        approveButton.onClick.AddListener(async () =>
         {
+            bool isOnline = await FirebaseManager.Instance.GetIsExitUser(this.requestData.StudentID);
+            Debug.Log("해당 유저 온라인 상태" + isOnline);
+            if (!isOnline)
+            {
+                approvalView.ClearRequestItem();
+                approvalView.NotUser();
+                return;
+            }
+
             OnApprove();
             approvalView.ClearRequestItem();
 
             approvalView.CompensationPaid(requestData.StudentPrefix, int.Parse(this.requestData.MissionReward)); 
         });
         //거절 버튼
-        rejectButton.onClick.AddListener(() =>
+        rejectButton.onClick.AddListener(async  () =>
         {
+            bool isOnline = await FirebaseManager.Instance.GetIsExitUser(this.requestData.StudentID);
+            if (!isOnline)
+            {
+                approvalView.ClearRequestItem();
+                approvalView.NotUser();
+                return;
+            }
+
             OnReject();
             approvalView.ClearRequestItem();
         });

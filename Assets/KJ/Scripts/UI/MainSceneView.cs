@@ -15,7 +15,7 @@ public enum MissionMapType
 }
 public enum MissionMapClearType
 {
-    None,Clear1,Clear2
+    None,Clear1,Clear2,Clear3,Clear4
 }
 
 public class MissionData
@@ -90,6 +90,8 @@ public class MainSceneView : MonoBehaviour
     [SerializeField]
     int loadingMaxCount = 3;
 
+    [SerializeField]
+    private Button LogOutBtn;
     private IEnumerator Start()
     {
         yield return new WaitUntil(() => AuthManager.Instance != null);
@@ -125,6 +127,12 @@ public class MainSceneView : MonoBehaviour
 
         teacherSendBtn.onClick.AddListener(OnTeacherSendBtn);
 
+        LogOutBtn.onClick.AddListener(() =>
+        {
+            AuthManager.Instance?.SignOut();
+
+            Application.Quit();
+        });
     }
 
 
@@ -355,6 +363,14 @@ public class MainSceneView : MonoBehaviour
                 case MissionMapClearType.Clear2:
                     OnThirdRouteButtonActive();
                     break;
+                case MissionMapClearType.Clear3:
+                    OnFourRouteButtonActive();
+                    break;
+                case MissionMapClearType.Clear4:
+                    OnFiveRouteButtonActive();
+
+                    FirebaseManager.Instance.StopListenRewardResult();
+                    break;
             }
         }
 
@@ -385,10 +401,13 @@ public class MainSceneView : MonoBehaviour
     /// </summary>
     public void OnSecondRouteButtonActive()
     {
+        ButtonInfo();
+
         for (int i = 0; i < routeButtons.Length; i++)
         {
             if (i == 0)
             {
+                routeButtons[i].GetComponent<RouteButtonItem>().ColorGrayButton();
                 routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
             }
             if (i == 1)
@@ -404,10 +423,13 @@ public class MainSceneView : MonoBehaviour
     /// </summary>
     public void OnThirdRouteButtonActive()
     {
+        ButtonInfo();
+
         for (int i = 0; i < routeButtons.Length; i++)
         {
             if (i == 0 || i == 1)
             {
+                routeButtons[i].GetComponent<RouteButtonItem>().ColorGrayButton();
                 routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
             }
             if (i == 2)
@@ -423,10 +445,13 @@ public class MainSceneView : MonoBehaviour
     /// </summary>
     public void OnFourRouteButtonActive()
     {
+        ButtonInfo();
+
         for (int i = 0; i < routeButtons.Length; i++)
         {
             if (i == 0 || i == 1 || i == 2) //1,2,3 
             {
+                routeButtons[i].GetComponent<RouteButtonItem>().ColorGrayButton();
                 routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
             }
             if (i == 3)
@@ -436,44 +461,44 @@ public class MainSceneView : MonoBehaviour
         }
 
     }
+    public void OnFiveRouteButtonActive()
+    {
+        ButtonInfo();
+
+        for (int i = 0; i < routeButtons.Length; i++)
+        {
+            if (i == 0 || i == 1 || i == 2 || i == 3) //1,2,3 
+            {
+                routeButtons[i].GetComponent<RouteButtonItem>().ColorGrayButton();
+                routeButtons[i].GetComponent<RouteButtonItem>().CheckButtonActive();
+            }
+            if (i == 4)
+            {
+                routeButtons[i].GetComponent<RouteButtonItem>().ColorWhiteButton();
+            }
+        }
+
+    }
+
+    private void ButtonInfo()
+    {
+        for (int i = 0; i < routeButtons.Length; i++)
+        {
+            Debug.Log($"인덱스 : {i} - 버튼 이름 : {routeButtons[i].gameObject.name}");
+        }
+    }
     #endregion
 
     #region 버튼 콜백
-    private void OnGUI()
-    {
-        if (GUILayout.Button("1번째 미션 완료"))
-        {
-            if (routeMissionDic.TryGetValue(currentRouteID, out var missions) && missionDic.ContainsKey(missions[0]))
-            {
-                missionDic[missions[0]].IsMissionClear = true;
-                AllMissionClear();
-
-            }
-
-        }
-        if (GUILayout.Button("2번째 미션 완료"))
-        {
-            if (routeMissionDic.TryGetValue(currentRouteID, out var missions) && missionDic.ContainsKey(missions[1]))
-            {
-                missionDic[missions[1]].IsMissionClear = true;
-                AllMissionClear();
-            }
-        }
-        if (GUILayout.Button("3번째 미션 완료"))
-        {
-            if (routeMissionDic.TryGetValue(currentRouteID, out var missions) && missionDic.ContainsKey(missions[2]))
-            {
-                missionDic[missions[2]].IsMissionClear = true;
-                AllMissionClear();
-            }
-        }
-    } 
     private void OnMissionButtonClicked(string routeID)
     {
         currentRouteID = routeID;
 
+        Debug.Log($"[클릭] routeID: {routeID} / routeMissionDic 보유 키: {string.Join(", ",  routeMissionDic.Keys)}");
+
         if (!routeMissionDic.TryGetValue(routeID, out var missions))
         {
+            Debug.LogWarning($"{routeID} 키가 routeMissionDic에 없음");
             return;
         }
 
@@ -512,8 +537,9 @@ public class MainSceneView : MonoBehaviour
     private async void OnDestroy()
     {
         teacherSendBtn.onClick.RemoveAllListeners();
+        LogOutBtn.onClick.RemoveAllListeners();
 
-        for(int i = 0; i< routeButtons.Length; i++)
+        for (int i = 0; i< routeButtons.Length; i++)
         {
             routeButtons[i].onClick.RemoveAllListeners();
         }

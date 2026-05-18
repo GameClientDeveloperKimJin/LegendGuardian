@@ -33,8 +33,6 @@ public class RouteButtonItem : MonoBehaviour
         //초기에는 첫번째 버튼만 활성화 -> 팀마다 루트 순서가 정해져 있어서 그럼
         if (index != 0)
         {
-            routeButton.interactable = false;
-
             ColorGrayButton();
         }
 
@@ -43,7 +41,6 @@ public class RouteButtonItem : MonoBehaviour
     public void CheckButtonActive()
     {
         checkImage.gameObject.SetActive(true);
-        routeButton.interactable = false;
     }
 
     public void ColorGrayButton()
