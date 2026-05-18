@@ -9008,7 +9008,7 @@ MonoBehaviour:
   hintButton: {fileID: 2012011926}
   nextButton: {fileID: 1086598258}
   hintText: {fileID: 16188423}
-  quizCanvas: {fileID: 0}
+  quizCanvas: {fileID: 262022641}
   correctAnswerReward: 3
 --- !u!224 &1190548831
 RectTransform:
