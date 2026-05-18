@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// 선생님이 학생의 미션 승인 요청 관리 및 관련 데이터 관리
@@ -173,5 +174,24 @@ public class TeacherApprovalView : MonoBehaviour
     private void OnDestroy()
     {
         FirebaseManager.Instance.StopListenPendingRequests();
+    }
+
+    [SerializeField]
+    private GameObject InfoImage;
+
+    /// <summary>
+    /// 승인/거절 버튼을 눌렀지만, 해당 유저가 로그아웃 되었을 때 처리
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
+    public void NotUser()
+    {
+        InfoImage.gameObject.SetActive(true);
+        StartCoroutine(DealyImage());
+
+    }
+    private IEnumerator DealyImage()
+    {
+        yield return new WaitForSeconds(1.5f);
+        InfoImage.gameObject.SetActive(false);
     }
 }

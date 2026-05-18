@@ -210,9 +210,43 @@ public class AuthManager : MonoBehaviour
         }
     }
 
+    private void OnApplicationQuit()
+    {
+        SignOut();
+    }
     private void OnDestroy()
     {
         SignOut();
+    }
+    private async void OnApplicationPause(bool pause)
+    {
+        if (pause)
+        {
+            IsOnline(false);
+        }
+        else
+        {
+            // 앱 복귀 시
+            IsOnline(true);
+        }
+    }
+
+    private async void IsOnline(bool isOnline)
+    {
+        try
+        {
+            string uid = FirebaseManager.Instance.Auth.CurrentUser?.UserId;
+            if (!string.IsNullOrEmpty(uid))
+            {
+                await FirebaseManager.Instance.Firestore
+                    .Collection("users").Document(uid)
+                    .UpdateAsync("isOnline", isOnline);
+            }
+        }
+        catch(Exception e)
+        {
+            Debug.LogError($"오류: {e.Message}");
+        }
     }
     /// <summary>
     /// 로그아웃
