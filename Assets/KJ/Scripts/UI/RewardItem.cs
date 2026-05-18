@@ -35,6 +35,7 @@ public class RewardItem : MonoBehaviour
 
             if(currentScore >= rewardSO.RequiredScore) //교환 조건
             {
+                Debug.Log("점수 차감 : " + rewardSO.RequiredScore);
                 ScoreManager.Instance.TrySpendScore(rewardSO.RequiredScore); //점수 차감
 
                 OnExchangeded?.Invoke();

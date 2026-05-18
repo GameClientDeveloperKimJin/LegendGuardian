@@ -23,7 +23,7 @@ public class MissionData
     public string MissionName;
     public string MissionID;
     public string MissionDetail;
-    public string MissionReward;
+    public long MissionReward;
     public bool IsMissionClear;
 }
 
@@ -146,10 +146,10 @@ public class MainSceneView : MonoBehaviour
                 mission.IsMissionClear = true;
 
                 //보상 지급
-                long missionRewardValue = long.Parse(mission.MissionReward);
-
-                await FirebaseManager.Instance.UpdateUserScore(AuthManager.Instance?.LoginUserID, missionRewardValue);
+                await FirebaseManager.Instance.UpdateUserScore(AuthManager.Instance?.LoginUserID, mission.MissionReward);
                 await FirebaseManager.Instance.IncrementCompletedMissionCount(AuthManager.Instance?.LoginUserID);
+
+
 
             }
 
@@ -212,7 +212,9 @@ public class MainSceneView : MonoBehaviour
                     {
                         MissionName = missionAllDic.TryGetValue("name", out var name) ? name.ToString() : "",
                         MissionDetail = missionAllDic.TryGetValue("detail", out var detail) ? detail.ToString() : "",
-                        MissionReward = missionAllDic.TryGetValue("reward", out var reward) ? reward.ToString() : "",
+                        MissionReward = missionAllDic.TryGetValue("reward", out var reward) ? ParseReward(reward) : 0L,
+
+
                         MissionID = missionID,
 
                         IsMissionClear = false,
@@ -225,6 +227,12 @@ public class MainSceneView : MonoBehaviour
             Debug.LogError(e.Message);
         }
 
+    }
+
+    private long ParseReward(object reward)
+    {
+        string raw = reward?.ToString()?.Trim().ToLower().Replace("wh", "") ?? "0";
+        return long.TryParse(raw, out long result) ? result : 0L;
     }
     #endregion
 
@@ -243,10 +251,8 @@ public class MainSceneView : MonoBehaviour
             {
                 continue;
             }
-            if (missionDic[missionID].IsMissionClear)
-            {
-                continue;
-            }
+            if (!missionDic.TryGetValue(missionID, out var mission)) continue;
+            if (mission.IsMissionClear) continue;
 
             currentMissionID = missionID;
 
