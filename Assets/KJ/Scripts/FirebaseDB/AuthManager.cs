@@ -266,7 +266,7 @@ public class AuthManager : MonoBehaviour
 
 
             FirebaseManager.Instance?.Auth?.SignOut();
-            RemoveTeamListener();
+            await RemoveTeamListener();
 
             Debug.Log("로그아웃 완료");
         }
@@ -371,17 +371,17 @@ public class AuthManager : MonoBehaviour
 
 
     #region 팀 상태 이벤트 연결
+    /// <summary>
+    /// 팀 구성 이벤트 구독 해제 메서드 호출
+    /// </summary>
+    public async Task RemoveTeamListener() => await FirebaseManager.Instance?.UnListenTeamStatus();
+
 
     /// <summary>
     /// 팀 구성 이벤트 구독 메서드 호출
     /// </summary>
     /// <param name="teamID"></param>
     public void AddTeamListener() => FirebaseManager.Instance?.ListenTeamStatus(OnStatusChanged);
-
-    /// <summary>
-    /// 팀 구성 이벤트 구독 해제 메서드 호출
-    /// </summary>
-    public void RemoveTeamListener() => FirebaseManager.Instance?.UnListenTeamStatus();
 
     /// <summary>
     /// RealTimeDB에 status 값이 변경되었을 때 호출 -> 값이 만약 ready라면 클라측 팀 구성 완료

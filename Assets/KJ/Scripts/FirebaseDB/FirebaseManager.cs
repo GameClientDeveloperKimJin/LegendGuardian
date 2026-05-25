@@ -442,13 +442,7 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     /// <param name="onChanged"></param>
     public void ListenTeamStatus(Action<string> onChanged)
     {
-        //중복 구독 방지
-        //if(_teamListeners.ContainsKey(teamID))
-        //{
-        //    return;
-        //}
-
-        // DatabaseReference teamRef = RealtimeDB.Child("teams").Child(teamID).Child("status");
+        //DatabaseReference teamRef = RealtimeDB.Child("teams").Child(teamID).Child("status");
         teamRef = RealtimeDB.Child("teams").Child("status");
 
         handler = (sender, args) => //args : Firebase가 넘겨주는 데이터
@@ -464,7 +458,6 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         };
 
         teamRef.ValueChanged += handler; //1. status 값 변경 되면 위 handler 재호출 설정
-        //_teamListeners[teamID] = teamRef;
     }
 
     /// <summary>
@@ -579,9 +572,18 @@ public class FirebaseManager : MonoBehaviour, IDisposable
     #endregion
 
     #region 미션 요청/수락
-    // ──────────────────────────────────────────
-    // 학생: 미션 완료 승인 요청 전송
-    // ──────────────────────────────────────────
+   /// <summary>
+   /// 학생 미션 요청 
+   /// </summary>
+   /// <param name="studentPrefix"></param>
+   /// <param name="studentId"></param>
+   /// <param name="studentName"></param>
+   /// <param name="teamId"></param>
+   /// <param name="missionId"></param>
+   /// <param name="missionName"></param>
+   /// <param name="missionReward"></param>
+   /// <param name="routeId"></param>
+   /// <returns></returns>
     public async Task SendMissionApprovalRequest(
         string studentPrefix, string studentId, string studentName,
         string teamId, string missionId, string missionName, long missionReward, string routeId)
