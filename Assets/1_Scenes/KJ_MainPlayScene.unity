@@ -3372,8 +3372,8 @@ MonoBehaviour:
   missionCanvas: {fileID: 1177648911}
   titleMapTMP: {fileID: 1609316487}
   mapImage: {fileID: 1485266350}
-  outdoorMap: {fileID: 21300000, guid: 5bcaafbaf713d964390bec27d8e1fd71, type: 3}
-  floorMap_1: {fileID: 21300000, guid: 426c79891e90dda47ab39fd650c0f39c, type: 3}
+  outdoorMap: {fileID: 21300000, guid: 474154eec2947754993d0153b4e0180b, type: 3}
+  floorMap_1: {fileID: 21300000, guid: 3f9c6f5f7e7834f458d7c9dc83820097, type: 3}
   floorMap_2: {fileID: 21300000, guid: e5525ee701b485947b693b701c863388, type: 3}
   floorMap_3: {fileID: 21300000, guid: d53d5c05ef878734f91515c4f85303a6, type: 3}
   missionTitleTMP: {fileID: 1832733229}
@@ -16102,12 +16102,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapImage: {fileID: 312771579}
-  defaultOutdoorSprite: {fileID: 21300000, guid: 5bcaafbaf713d964390bec27d8e1fd71, type: 3}
+  defaultOutdoorSprite: {fileID: 21300000, guid: 474154eec2947754993d0153b4e0180b, type: 3}
   floorMapDataList:
   - button: {fileID: 413434908}
-    mapSprite: {fileID: 21300000, guid: 5bcaafbaf713d964390bec27d8e1fd71, type: 3}
+    mapSprite: {fileID: 21300000, guid: 474154eec2947754993d0153b4e0180b, type: 3}
   - button: {fileID: 1344388884}
-    mapSprite: {fileID: 21300000, guid: 426c79891e90dda47ab39fd650c0f39c, type: 3}
+    mapSprite: {fileID: 21300000, guid: 3f9c6f5f7e7834f458d7c9dc83820097, type: 3}
   - button: {fileID: 111545164}
     mapSprite: {fileID: 21300000, guid: e5525ee701b485947b693b701c863388, type: 3}
   - button: {fileID: 659757895}
