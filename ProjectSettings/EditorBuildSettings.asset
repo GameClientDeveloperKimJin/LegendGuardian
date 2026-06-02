@@ -30,6 +30,9 @@ EditorBuildSettings:
     path: Assets/1_Scenes/TeacherScene_KJ.unity
     guid: 148eb02a9c3c13f40b0b875819959c90
   - enabled: 1
+    path: Assets/1_Scenes/KJ_MainPlayScene_ver2.unity
+    guid: 48c5c6afee9f7a64f922b797607d9887
+  - enabled: 1
     path: Assets/1_Scenes/SE_Scene/QuizScene.unity
     guid: 598a3b2eed01e3144bd46553cab851fd
   m_configObjects:

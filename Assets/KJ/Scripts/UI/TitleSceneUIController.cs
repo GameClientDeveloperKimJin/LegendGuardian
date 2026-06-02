@@ -18,6 +18,11 @@ public class TitleSceneUIController : MonoBehaviour
     TMP_InputField PWInputField;
     [SerializeField]
     Button LoginBtn;
+    [SerializeField]
+    Toggle SaveIdToggle;
+
+    const string PREF_SAVED_ID = "SavedLoginId";
+    const string PREF_SAVE_ID_CHECKED = "SaveIdChecked";
 
     [Header("안내 관련")]
     [SerializeField]
@@ -56,8 +61,6 @@ public class TitleSceneUIController : MonoBehaviour
     }
     private void OnEnable()
     {
-       
-
         if(AuthManager.Instance != null)
         {
             AuthManager.Instance.OnAuthInfo += OnInfoUI;
@@ -67,6 +70,10 @@ public class TitleSceneUIController : MonoBehaviour
 
         CreateBtn.onClick.AddListener(() => CreateImage.gameObject.SetActive(true));
         CreateCheckBtn.onClick.AddListener(() => OnCreateUI(CreateLoginInputField.text, CreatePWInputField.text , CreateNickNameInputField.text));
+
+        LoadSavedId();
+        if (SaveIdToggle != null)
+            SaveIdToggle.onValueChanged.AddListener(OnSaveIdToggleChanged);
     }
     private IEnumerator Start()
     {
@@ -88,6 +95,9 @@ public class TitleSceneUIController : MonoBehaviour
         LoginBtn.onClick.RemoveAllListeners();
         InfoCheckBtn.onClick.RemoveAllListeners();
         CreateBtn.onClick.RemoveAllListeners();
+
+        if (SaveIdToggle != null)
+            SaveIdToggle.onValueChanged.RemoveListener(OnSaveIdToggleChanged);
     }
 
     #region 로그인 / 회원가입
@@ -109,17 +119,25 @@ public class TitleSceneUIController : MonoBehaviour
             return;
         }
 
+        // [Analytics] 로그인 시도 이벤트
+        AnalyticsManager.Instance?.LogLoginAttempt();
+
        var (success,error) = await AuthManager.Instance.SignInAsync(id, pw);
-       
+
         if(success)
         {
             if(id.Contains("teacher"))
             {
+                // [Analytics] 선생님 로그인 성공
+                AnalyticsManager.Instance?.LogLoginSuccess("teacher");
                 SceneManager.LoadScene("TeacherScene_KJ");
                 return;
             }
             LoginInputField.text = "";
             PWInputField.text = "";
+
+            // [Analytics] 학생 로그인 성공
+            AnalyticsManager.Instance?.LogLoginSuccess("student");
 
             OnInfoUI("로그인 성공");
 
@@ -128,9 +146,16 @@ public class TitleSceneUIController : MonoBehaviour
             {
                 AuthManager.Instance.SaveLoginUser(id);
 
+                if (SaveIdToggle != null && SaveIdToggle.isOn)
+                {
+                    PlayerPrefs.SetString(PREF_SAVED_ID, id);
+                    PlayerPrefs.SetInt(PREF_SAVE_ID_CHECKED, 1);
+                    PlayerPrefs.Save();
+                }
+
                 OnHideInfoUI();
                 TeamLoading();
-            });           
+            });
         }
         else
         {
@@ -215,7 +240,7 @@ public class TitleSceneUIController : MonoBehaviour
         {
             if(authManager.IsSkip)
             {
-                SceneManager.LoadScene("KJ_MainPlayScene");
+                SceneManager.LoadScene("KJ_MainPlayScene_ver2");
                 yield break;
             }
             currentLoadingCount++;
@@ -237,10 +262,40 @@ public class TitleSceneUIController : MonoBehaviour
 
         teamLoadingCanvas.enabled = false;
 
+        // [Analytics] 팀 구성 완료 → 룰렛 진입 (Funnel 3단계)
+        AnalyticsManager.Instance?.LogTeamLoadingComplete();
+
         uiRuletCanvas.enabled = true;
         Debug.Log("팀 로딩 완료! 룰렛 시작");
     }
 
+
+    #region 아이디 저장
+    private void LoadSavedId()
+    {
+        if (SaveIdToggle == null) return;
+
+        bool wasSaved = PlayerPrefs.GetInt(PREF_SAVE_ID_CHECKED, 0) == 1;
+        SaveIdToggle.isOn = wasSaved;
+
+        if (wasSaved)
+        {
+            string savedId = PlayerPrefs.GetString(PREF_SAVED_ID, "");
+            if (!string.IsNullOrEmpty(savedId))
+                LoginInputField.text = savedId;
+        }
+    }
+
+    private void OnSaveIdToggleChanged(bool isOn)
+    {
+        if (!isOn)
+        {
+            PlayerPrefs.DeleteKey(PREF_SAVED_ID);
+            PlayerPrefs.SetInt(PREF_SAVE_ID_CHECKED, 0);
+            PlayerPrefs.Save();
+        }
+    }
+    #endregion
 
     #region 안내창
     private void OnInfoUI(string message)

@@ -49,6 +49,7 @@ public class AuthManager : MonoBehaviour
     }
 
     public event Action<string> OnAuthInfo;
+    public static event Action OnForceQuit;
 
     public string LoginUserID { get; private set; }
     public string LoginUserName { get; private set; }
@@ -194,6 +195,10 @@ public class AuthManager : MonoBehaviour
                 AddTeamListener();
             }
 
+            // [Analytics] 로그인 성공 시 역할 세팅 → DebugView에서 user_role 세그먼트 확인 가능
+            LoginUserRole = email.Contains("teacher") ? "teacher" : "student";
+            AnalyticsManager.Instance?.SetUserRole(LoginUserRole);
+
             return (true, null); // true : 성공 , null : 에러 없음
         }
         catch (FirebaseException e)
@@ -212,6 +217,7 @@ public class AuthManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
+        OnForceQuit?.Invoke();
         SignOut();
     }
     private void OnDestroy()
@@ -222,6 +228,7 @@ public class AuthManager : MonoBehaviour
     {
         if (pause)
         {
+            OnForceQuit?.Invoke();
             IsOnline(false);
         }
         else

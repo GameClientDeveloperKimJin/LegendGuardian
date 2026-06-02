@@ -714,6 +714,17 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         _myRequestRef.ValueChanged += _myRequestHandler;
     }
 
+    /// <summary>
+    /// 어플 강제 종료
+    /// </summary>
+    /// <param name="studentPrefix"></param>
+    public async Task AppLogout(string studentPrefix)
+    {
+        var statusRef = RealtimeDB.Child("missionRequests").Child(studentPrefix).Child("status");
+        await statusRef.SetValueAsync("rejected");
+
+        StopListenMyRequest();
+    }
     public void StopListenMyRequest()
     {
         if (_myRequestRef != null)
