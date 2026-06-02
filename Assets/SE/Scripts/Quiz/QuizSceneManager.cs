@@ -12,45 +12,48 @@ public enum QuizArea
 
 public class QuizSceneManager : MonoBehaviour
 {
-    [Header("Àå¼Òº° ÄûÁî ¼¼Æ®")]
+    [Header("ï¿½ï¿½Òºï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®")]
     [SerializeField] private QuizSet outsideQuizSet;
     [SerializeField] private QuizSet floor1QuizSet;
     [SerializeField] private QuizSet floor2QuizSet;
     [SerializeField] private QuizSet floor3QuizSet;
 
-    [Header("¹®Á¦ UI")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ UI")]
     [SerializeField] private Image questionImage;
     [SerializeField] private TMP_Text questionText;
 
-    [Header("º¸±â UI")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ UI")]
     [SerializeField] private Button[] optionButtons;
     [SerializeField] private TMP_Text[] optionTexts;
 
-    [Header("Á¤´ä/¿À´ä °á°ú ÀÌ¹ÌÁö")]
+    [Header("ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½")]
     [SerializeField] private Image resultImage;
     [SerializeField] private Sprite correctSprite;
     [SerializeField] private Sprite wrongSprite;
 
-    [Header("ÇÏ´Ü ¹öÆ°")]
+    [Header("ï¿½Ï´ï¿½ ï¿½ï¿½Æ°")]
     [SerializeField] private Button prevButton;
     [SerializeField] private Button hintButton;
     [SerializeField] private Button nextButton;
 
-    [Header("ÈùÆ® ÅØ½ºÆ®")]
+    [Header("ï¿½ï¿½Æ® ï¿½Ø½ï¿½Æ®")]
     [SerializeField] private TMP_Text hintText;
 
-    [Header("ÄûÁî Äµ¹ö½º")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ Äµï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private GameObject quizCanvas;
 
-    [Header("ÄûÁî º¸»ó")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private int correctAnswerReward = 3;
 
     private QuizSet currentQuizSet;
     private int currentQuestionIndex = 0;
 
-    // -1 = ¾ÆÁ÷ ¼±ÅÃ ¾È ÇÔ
-    //  0 = ¿À´ä
-    //  1 = Á¤´ä
+    // [Analytics] quiz_submitted ì´ë²¤íŠ¸ì— í€´ì¦ˆ ì˜ì—­ íŒŒë¼ë¯¸í„° ì „ë‹¬ìš©
+    private QuizArea _currentArea;
+
+    // -1 = ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½
+    //  0 = ï¿½ï¿½ï¿½ï¿½
+    //  1 = ï¿½ï¿½ï¿½ï¿½
     private int[] answerResults;
 
     private void Start()
@@ -59,13 +62,13 @@ public class QuizSceneManager : MonoBehaviour
 
         MainSceneView.OnQuizStarted += StartQuizByArea;
 
-        // ½ÃÀÛ ½Ã °á°ú ÀÌ¹ÌÁö ¼û±è
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (resultImage != null)
         {
             resultImage.gameObject.SetActive(false);
         }
 
-        // ½ÃÀÛ ½Ã ÈùÆ® ºñ¿ì±â
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
         if (hintText != null)
         {
             hintText.text = "";
@@ -118,7 +121,7 @@ public class QuizSceneManager : MonoBehaviour
 
     private void SelectAnswer(int selectedIndex)
     {
-        // ÀÌ¹Ì ¼±ÅÃÇÑ ¹®Á¦¸é ÀÔ·Â ¹«½Ã
+        // ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (answerResults[currentQuestionIndex] != -1)
         {
             return;
@@ -130,18 +133,25 @@ public class QuizSceneManager : MonoBehaviour
         {
             answerResults[currentQuestionIndex] = 1;
 
-            // Á¡¼ö +3
+            // ï¿½ï¿½ï¿½ï¿½ +3
             if (ScoreManager.Instance != null)
             {
                 ScoreManager.Instance.AddScore(correctAnswerReward);
             }
 
-            Debug.Log("Á¤´äÀÔ´Ï´Ù!");
+            // [Analytics] í€´ì¦ˆ ì •ë‹µ ì œì¶œ (Funnel 5ë‹¨ê³„)
+            AnalyticsManager.Instance?.LogQuizSubmitted(_currentArea.ToString(), isCorrect: true);
+
+            Debug.Log("ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½!");
         }
         else
         {
             answerResults[currentQuestionIndex] = 0;
-            Debug.Log("¿À´äÀÔ´Ï´Ù!");
+
+            // [Analytics] í€´ì¦ˆ ì˜¤ë‹µ ì œì¶œ
+            AnalyticsManager.Instance?.LogQuizSubmitted(_currentArea.ToString(), isCorrect: false);
+
+            Debug.Log("ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½!");
         }
 
         UpdateResultImage();
@@ -218,6 +228,9 @@ public class QuizSceneManager : MonoBehaviour
 
     public void StartQuizByArea(QuizArea area)
     {
+        // [Analytics] í˜„ì¬ í€´ì¦ˆ ì˜ì—­ ì €ì¥ â†’ SelectAnswerì—ì„œ íŒŒë¼ë¯¸í„°ë¡œ ì‚¬ìš©
+        _currentArea = area;
+
         switch (area)
         {
             case QuizArea.Outside:
@@ -239,14 +252,14 @@ public class QuizSceneManager : MonoBehaviour
 
         if (currentQuizSet == null)
         {
-            Debug.LogError($"{area} QuizSetÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError($"{area} QuizSetï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 
-        // ¹®Á¦ ÀÎµ¦½º ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         currentQuestionIndex = 0;
 
-        // ¹®Á¦º° Á¤´ä »óÅÂ ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         answerResults = new int[currentQuizSet.questions.Length];
 
         for (int i = 0; i < answerResults.Length; i++)
@@ -254,19 +267,19 @@ public class QuizSceneManager : MonoBehaviour
             answerResults[i] = -1;
         }
 
-        // °á°ú ÀÌ¹ÌÁö ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         if (resultImage != null)
         {
             resultImage.gameObject.SetActive(false);
         }
 
-        // ÈùÆ® ÃÊ±âÈ­
+        // ï¿½ï¿½Æ® ï¿½Ê±ï¿½È­
         if (hintText != null)
         {
             hintText.text = "";
         }
 
-        // Ã¹ ¹®Á¦ Ç¥½Ã
+        // Ã¹ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½
         ShowQuestion(0);
     }
 }

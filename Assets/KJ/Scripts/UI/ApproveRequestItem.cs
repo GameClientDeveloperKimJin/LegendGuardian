@@ -5,32 +5,32 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// ½ÂÀÎ ¿äÃ» ¾ÆÀÌÅÛ ÇÁ¸®Æé , UI ½Ã°¢È­
+/// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ , UI ï¿½Ã°ï¿½È­
 /// </summary>
 public class ApproveRequestItem : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI studentNameTMP; //¿äÃ»ÇÑ ÇĞ»ı ÀÌ¸§
-    [SerializeField] private TextMeshProUGUI missionNameTMP; //¿äÃ»ÇÑ ¹Ì¼Ç ÀÌ¸§
-    [SerializeField] private TextMeshProUGUI missionRewardTMP; //¿äÃ»ÇÑ ¹Ì¼Ç º¸»ó
+    [SerializeField] private TextMeshProUGUI studentNameTMP; //ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½Ğ»ï¿½ ï¿½Ì¸ï¿½
+    [SerializeField] private TextMeshProUGUI missionNameTMP; //ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½Ì¼ï¿½ ï¿½Ì¸ï¿½
+    [SerializeField] private TextMeshProUGUI missionRewardTMP; //ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-    [SerializeField] private Button approveButton; //¼ö¶ô
-    [SerializeField] private Button rejectButton; //°ÅÀı
+    [SerializeField] private Button approveButton; //ï¿½ï¿½ï¿½ï¿½
+    [SerializeField] private Button rejectButton; //ï¿½ï¿½ï¿½ï¿½
 
-    private MissionRequestData requestData; //¹Ì¼Ç ¿äÃ» µ¥ÀÌÅÍ
+    private MissionRequestData requestData; //ï¿½Ì¼ï¿½ ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     public  void Init(TeacherApprovalView approvalView, MissionRequestData requestData)
     {
         this.requestData = requestData;
 
-        studentNameTMP.text = $"ÀÌ¸§: {this.requestData.StudentName}";
-        missionNameTMP.text = $"¹Ì¼Ç: {this.requestData.MissionName}";
-        missionRewardTMP.text = $"º¸»ó: {this.requestData.MissionReward}";
+        studentNameTMP.text = $"ï¿½Ì¸ï¿½: {this.requestData.StudentName}";
+        missionNameTMP.text = $"ï¿½Ì¼ï¿½: {this.requestData.MissionName}";
+        missionRewardTMP.text = $"ï¿½ï¿½ï¿½ï¿½: {this.requestData.MissionReward}";
 
-        //½ÂÀÎ ¹öÆ°
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°
         approveButton.onClick.AddListener(async () =>
         {
             bool isOnline = await FirebaseManager.Instance.GetIsExitUser(this.requestData.StudentID);
-            Debug.Log("ÇØ´ç À¯Àú ¿Â¶óÀÎ »óÅÂ" + isOnline);
+            Debug.Log("ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Â¶ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½" + isOnline);
             if (!isOnline)
             {
                 approvalView.ClearRequestItem();
@@ -43,7 +43,7 @@ public class ApproveRequestItem : MonoBehaviour
 
             approvalView.CompensationPaid(requestData.StudentPrefix, int.Parse(this.requestData.MissionReward)); 
         });
-        //°ÅÀı ¹öÆ°
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°
         rejectButton.onClick.AddListener(async  () =>
         {
             bool isOnline = await FirebaseManager.Instance.GetIsExitUser(this.requestData.StudentID);
@@ -64,6 +64,9 @@ public class ApproveRequestItem : MonoBehaviour
         approveButton.interactable = false;
         rejectButton.interactable = false;
 
+        // [Analytics] ì„ ìƒë‹˜ ìŠ¹ì¸ í–‰ë™ ì´ë²¤íŠ¸
+        AnalyticsManager.Instance?.LogApprovalAction("approved", requestData.MissionID, requestData.MissionReward);
+
         await FirebaseManager.Instance.ApproveRequest(requestData.StudentPrefix); // wls6189
     }
 
@@ -71,6 +74,9 @@ public class ApproveRequestItem : MonoBehaviour
     {
         approveButton.interactable = false;
         rejectButton.interactable = false;
+
+        // [Analytics] ì„ ìƒë‹˜ ê±°ì ˆ í–‰ë™ ì´ë²¤íŠ¸
+        AnalyticsManager.Instance?.LogApprovalAction("rejected", requestData.MissionID, requestData.MissionReward);
 
         await FirebaseManager.Instance.RejectRequest(requestData.StudentPrefix);
 
