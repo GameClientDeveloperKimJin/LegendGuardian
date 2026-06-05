@@ -157,11 +157,10 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         {
             foreach (DocumentSnapshot doc in snapshot.Documents)
             {
-                //클라가 계산하면 스레드 간의 Race Condition 발생 위험이 있음. 따라서 서버가 직접 계산하여 위험을 방지한다.
                 await doc.Reference.UpdateAsync("score", FieldValue.Increment(score));
 
-                //long currentScore = doc.GetValue<long>("score");
-                //await doc.Reference.UpdateAsync("score", currentScore + score);
+                if (doc.TryGetValue("teamId", out string teamId) && !string.IsNullOrEmpty(teamId))
+                    await Firestore.Collection("teams").Document(teamId).UpdateAsync("score", FieldValue.Increment(score));
 
                 OnScoreUpdated?.Invoke(score);
                 return;
@@ -169,6 +168,26 @@ public class FirebaseManager : MonoBehaviour, IDisposable
         }
 
         Debug.LogError($"{userID} 에 맞는 유저가 없습니다. ");
+    }
+
+    public async Task<List<TeamRankingData>> GetTeamRanking(int limit = 10)
+    {
+        QuerySnapshot snapshot = await Firestore.Collection("teams").OrderByDescending("score").Limit(limit).GetSnapshotAsync();
+
+        var list = new List<TeamRankingData>();
+        foreach (DocumentSnapshot doc in snapshot.Documents)
+        {
+            long scoreValue = 0;
+            if (doc.TryGetValue("score", out object obj))
+                scoreValue = Convert.ToInt64(obj);
+
+            list.Add(new TeamRankingData
+            {
+                TeamName = doc.TryGetValue("name", out string name) ? name : "팀 없음",
+                score = scoreValue
+            });
+        }
+        return list;
     }
 
     /// <summary>

@@ -4,24 +4,35 @@ using UnityEngine;
 public class RankingData
 {
     public string NickName;
-    public long score; 
+    public long score;
 }
 
-/// <summary>
-/// 랭킹 데이터 관리 및 랭킹 UI 연출 
-/// </summary>
+public class TeamRankingData
+{
+    public string TeamName;
+    public long score;
+}
+
+public enum RankingMode { User, Team }
+
 public class RankingView : MonoBehaviour
 {
-    private void OnEnable()
-    {
-        UserRanking();
-    }
+    [SerializeField]
+    RankingMode mode;
 
     [SerializeField]
     GameObject RankItemPrefab;
 
     [SerializeField]
     Transform RankContent;
+
+    private void OnEnable()
+    {
+        if (mode == RankingMode.User)
+            UserRanking();
+        else
+            TeamRanking();
+    }
 
     private async void UserRanking()
     {
@@ -35,17 +46,44 @@ public class RankingView : MonoBehaviour
             rank++;
 
             GameObject rankItem = Instantiate(RankItemPrefab, RankContent);
-            rankItem.GetComponent<RankItem>().Init(rank.ToString(), rankingData.NickName, rankingData.score.ToString());
+            rankItem.GetComponent<RankItem>().Init(rank, rankingData.NickName, rankingData.score.ToString());
 
             Debug.Log($"{rankingData.NickName} , {rankingData.score.ToString()}");
         }
     }
 
+    private async void TeamRanking()
+    {
+        var rankList = await FirebaseManager.Instance?.GetTeamRanking();
+
+        if (rankList == null) return;
+
+        int rank = 0;
+        foreach (var rankingData in rankList)
+        {
+            rank++;
+
+            GameObject rankItem = Instantiate(RankItemPrefab, RankContent);
+            rankItem.GetComponent<RankItem>().Init(rank, rankingData.TeamName, rankingData.score.ToString());
+        }
+    }
+
     private void OnDisable()
     {
-        foreach(Transform rankitem in RankContent)
+
+        foreach (Transform rankitem in RankContent)
         {
             Destroy(rankitem.gameObject);
         }
     }
+
+    private void UserRankDestroy()
+    {
+        foreach (Transform rankitem in RankContent)
+        {
+            Destroy(rankitem.gameObject);
+        }
+    }
+
+
 }

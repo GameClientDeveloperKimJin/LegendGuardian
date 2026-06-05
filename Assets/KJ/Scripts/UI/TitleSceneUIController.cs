@@ -240,7 +240,7 @@ public class TitleSceneUIController : MonoBehaviour
         {
             if(authManager.IsSkip)
             {
-                SceneManager.LoadScene("KJ_MainPlayScene_ver2");
+                SceneManager.LoadScene("KJ_MainPlayScene");
                 yield break;
             }
             currentLoadingCount++;
