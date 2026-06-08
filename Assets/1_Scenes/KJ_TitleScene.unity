@@ -6580,6 +6580,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6706112727743145830, guid: 4e5cfdb95d801a04dbed2f4b1d43146b, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 4df6e31f3a3396a448588014232483f7, type: 2}
+    - target: {fileID: 6706112727743145830, guid: 4e5cfdb95d801a04dbed2f4b1d43146b, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 7682858408187000808, guid: 4df6e31f3a3396a448588014232483f7, type: 2}
+    - target: {fileID: 6706112727743145830, guid: 4e5cfdb95d801a04dbed2f4b1d43146b, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7936753904315013698, guid: 4e5cfdb95d801a04dbed2f4b1d43146b, type: 3}
       propertyPath: m_Name
       value: MainUICanvas
