@@ -2927,10 +2927,14 @@ MonoBehaviour:
   rewardTMP: {fileID: 802203394}
   routeButtonPrefab: {fileID: 8863580806556657873, guid: 42a5fe85b3666bc438010e85a58a1857, type: 3}
   teacherSendBtn: {fileID: 1966423534}
+  backButton: {fileID: 0}
   waitCanvas: {fileID: 382458490}
   LodingTMP: {fileID: 269213158}
   quizeCanvas: {fileID: 247897158}
+  WaitForNextAreaImage: {fileID: 0}
+  lodingNextTMP: {fileID: 0}
   loadingMaxCount: 3
+  hintTMP: {fileID: 0}
 --- !u!1 &413434906
 GameObject:
   m_ObjectHideFlags: 0
@@ -4142,6 +4146,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c11b2213a53e5e947980b7a5606a7be2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mode: 0
   RankItemPrefab: {fileID: 4136071221762905275, guid: b4bb4a3106013864f91483b2ece02adb, type: 3}
   RankContent: {fileID: 1587564937}
 --- !u!1 &596710241
@@ -8064,7 +8069,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1177648912
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13358,6 +13363,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapImage: {fileID: 312771579}
+  defaultOutdoorSprite: {fileID: 0}
   floorMapDataList:
   - button: {fileID: 413434908}
     mapSprite: {fileID: 21300000, guid: 5bcaafbaf713d964390bec27d8e1fd71, type: 3}

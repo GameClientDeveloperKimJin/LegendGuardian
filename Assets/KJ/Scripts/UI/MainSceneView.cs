@@ -24,6 +24,7 @@ public class MissionData
     public string MissionName;
     public string MissionID;
     public string MissionDetail;
+    public string MissionHint;
     public long MissionReward;
     public bool IsMissionClear;
 }
@@ -228,7 +229,7 @@ public class MainSceneView : MonoBehaviour
                         MissionName = missionAllDic.TryGetValue("name", out var name) ? name.ToString() : "",
                         MissionDetail = missionAllDic.TryGetValue("detail", out var detail) ? detail.ToString() : "",
                         MissionReward = missionAllDic.TryGetValue("reward", out var reward) ? ParseReward(reward) : 0L,
-
+                        MissionHint = missionAllDic.TryGetValue("hint", out var hint) ? hint.ToString() : "",
 
                         MissionID = missionID,
 
@@ -293,12 +294,15 @@ public class MainSceneView : MonoBehaviour
 
             missionTitleTMP.text = missionDic[missionID].MissionName;
             missionDetailTMP.text = missionDic[missionID].MissionDetail;
+            hintTMP.text = $"힌트:{missionDic[missionID].MissionHint}";
             rewardTMP.text = $"보상 : {missionDic[missionID].MissionReward} wh";
             return;
 
         }
     }
 
+    [SerializeField]
+    TextMeshProUGUI hintTMP;
     IEnumerator LoadingTMP(string missionID)
     {
         if (!missionDic.TryGetValue(missionID, out var data))
