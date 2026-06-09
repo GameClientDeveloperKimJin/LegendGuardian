@@ -149,6 +149,7 @@ public class AuthManager : MonoBehaviour
         }
         catch (Exception e)
         {
+            OnAuthInfo?.Invoke("오류가 발생했습니다. 다시 시도해주세요.");
             return (false, e.Message);
         }
     }
@@ -179,7 +180,8 @@ public class AuthManager : MonoBehaviour
             if (!snapshot.Exists)
             {
                 FirebaseManager.Instance.Auth.SignOut();
-                return (false, "존재하지 않는 사용자입니다.");
+                OnAuthInfo?.Invoke("계정 데이터 오류입니다. 관리자에게 문의해주세요.");
+                return (false, "계정 데이터 오류입니다.");
             }
 
             Debug.Log($"로그인 성공 - 로그인 한 ID : {result.User.Email}");
@@ -211,6 +213,7 @@ public class AuthManager : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError($"일반 오류: {e.GetType().Name} / {e.Message}");
+            OnAuthInfo?.Invoke("오류가 발생했습니다. 다시 시도해주세요.");
             return (false, e.Message);
         }
     }
