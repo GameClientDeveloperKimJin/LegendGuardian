@@ -93,7 +93,7 @@ public class MainSceneView : MonoBehaviour
 
     #region 이벤트
     public static Action<QuizArea> OnQuizStarted;
-    public static Action<bool> OnButtonEvent; //버튼 입력 기능 활성화/비활성화 이벤트
+   
     #endregion
 
     #region 내부 상태
@@ -317,8 +317,6 @@ public class MainSceneView : MonoBehaviour
 
         int currentLoadingCount = 0;
 
-        OnButtonEvent.Invoke(false);
-
         while (!data.IsMissionClear)
         {
             currentLoadingCount++;
@@ -338,7 +336,6 @@ public class MainSceneView : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        OnButtonEvent.Invoke(true);
 
         teacherSendBtn.interactable = true;
         waitCanvas.gameObject.SetActive(false);
@@ -535,8 +532,6 @@ public class MainSceneView : MonoBehaviour
 
         WaitForNextAreaImage.gameObject.SetActive(true);
 
-        OnButtonEvent?.Invoke(false);
-
         int currentLoadingCount = 0;
 
         while (currentLoadingCount < loadingMaxCount)
@@ -553,7 +548,6 @@ public class MainSceneView : MonoBehaviour
         currentLoadingCount = 0;
         lodingNextTMP.text = "";
 
-        OnButtonEvent?.Invoke(true);
         WaitForNextAreaImage.gameObject.SetActive(false);
 
         OnMissionView(routeID, missions);
@@ -623,12 +617,14 @@ public class MainSceneView : MonoBehaviour
 
                 // [Analytics] 전환 이벤트: 보상 수령 확정 (Funnel 최종 단계)
                 AnalyticsManager.Instance?.LogRewardClaimed(currentMissionID, mission.MissionReward);
-
-
-
             }
 
             AllMissionClear();
+        }
+        else if (status == "rejected")
+        {
+            StopAllCoroutines();
+            waitCanvas.gameObject.SetActive(false);
         }
 
         teacherSendBtn.interactable = true;

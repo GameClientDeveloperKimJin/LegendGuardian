@@ -11,21 +11,4 @@ public class FooterTabButton : MonoBehaviour
     Button[] mainButtons;
 
 
-    private void Start()
-    {
-        MainSceneView.OnButtonEvent += OnButtonEvent;
-
-    }
-
-    private void OnDestroy()
-    {
-        MainSceneView.OnButtonEvent -= OnButtonEvent;
-    }
-    private void OnButtonEvent(bool IsActive)
-    {
-        for(int i = 0; i< mainButtons.Length; i++)
-        {
-            mainButtons[i].interactable = IsActive;
-        }
-    }
 }

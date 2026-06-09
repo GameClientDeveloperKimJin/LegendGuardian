@@ -21,26 +21,29 @@ public class RankItem : MonoBehaviour
         nickNameTMP.text = nickName;
         scoreTMP.text = $"{score} wh";
 
-        bool isMedal = rank <= 3;
+        int.TryParse(score, out int scoreValue);
+        bool isMedal = rank <= 3 && scoreValue > 0;
 
-        if(isMedal)
+        if (isMedal)
         {
             rankImage.gameObject.SetActive(false);
             rankTMP.gameObject.SetActive(false);
             titleTMP.gameObject.SetActive(rank == 1);
-            medalImage.gameObject.SetActive(isMedal);
+            medalImage.gameObject.SetActive(true);
+            medalImage.sprite = rank switch
+            {
+                1 => goldSprite,
+                2 => silverSprite,
+                _ => bronzeSprite
+            };
         }
         else
         {
+            rankImage.gameObject.SetActive(true);
             rankTMP.gameObject.SetActive(true);
-            rankTMP.text = rank.ToString();
+            rankTMP.text = scoreValue > 0 ? rank.ToString() : "-";
+            titleTMP.gameObject.SetActive(false);
+            medalImage.gameObject.SetActive(false);
         }
-
-        medalImage.sprite = rank switch
-        {
-            1 => goldSprite,
-            2 => silverSprite,
-            _ => bronzeSprite
-        };
     }
 }
